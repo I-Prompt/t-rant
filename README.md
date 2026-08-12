@@ -35,9 +35,9 @@ We don't claim this is unhackable anywhere: the defensible claim is the layered 
 
 ## The three tiers
 
-1. **Still You, Just Cooler**: same directness, same points, edges sanded off. No fake pleasantries added.
-2. **Professional & Clear**: standard workplace-diplomatic tone, direct but appropriate for a manager or client.
-3. **Maximum Diplomacy**: heavily softened, hedge-heavy, prioritizes preserving the relationship over directness.
+1. **Still You, Just Cooler**: same directness, same points, edges sanded off. No fake pleasantries added. Keeps every detail from the input, including tangential ones - only the wording changes, not the content.
+2. **Professional & Clear**: standard workplace-diplomatic tone, direct but appropriate for a manager or client. Also edits content, not just tone: drops specific side comparisons or accusations that read as inflammatory or oversharing (e.g. "you're getting a commission and I don't") while keeping the underlying concern.
+3. **Maximum Diplomacy**: heavily softened, hedge-heavy, prioritizes preserving the relationship over directness. Same content-editing as Professional & Clear, plus more hedging.
 
 Plus five optional **persona rewrites** for fun/sharing, generated on top of an already-clean message: Corporate Memo, Victorian Letter, Cease & Desist, Haiku, Nature Documentary.
 
@@ -50,7 +50,7 @@ The throughline for everything below: don't just claim something's safe or priva
 - **Privacy statement with a verifiability pointer**, not just a promise: the site links straight to [`src/lib`](app/src/lib) so anyone can read the actual logging code (only category and timestamp, ever - raw text is never persisted).
 - **[House Rules](app/src/app/house-rules/page.tsx) page**: precise definitions of the three tones, example phrases per flagging category, a live sandbox that runs the real classifier with no rewrite generated, and the full privacy/legal breakdown.
 - **[Dark Pattern Audit](app/src/app/dark-patterns/page.tsx)**: a satire page mocking how a typical app would monetize this exact tool, kept as a public receipt against ever actually doing it.
-- **["Get help now" buttons](app/src/app/page.tsx)**, prominent and always visible above the form: no classifier, however well-tuned, catches every phrasing, so there's a direct, one-tap path to real help that doesn't depend on the classifier working at all, and doesn't require typing or explaining anything first.
+- **["Get help now" buttons](app/src/app/page.tsx)**, always visible just below the form as a quiet text line (not a bordered callout - noticeable without competing with the actual product): no classifier, however well-tuned, catches every phrasing, so there's a direct, one-tap path to real help that doesn't depend on the classifier working at all, and doesn't require typing or explaining anything first. Language for the response is read from whatever you've typed, if anything; otherwise it defaults to English rather than guessing from browser/OS locale, which turned out to be an unreliable signal for what language someone's actually reading in.
 - **[`/status`](app/src/app/status/page.tsx)**: plain page reading live server config (mock vs. live mode, rate limits, model).
 
 ## Guardrail categories
@@ -87,7 +87,7 @@ Deliberately **not** translated: House Rules, site chrome, `/status`, `/dark-pat
 - **Rant Intensity Score**: 1-10 rating of how heated the input reads, returned by the classifier alongside its label.
 - **Rage thermometer**: a client-side-only heuristic meter that fills as you type, before you even submit (no API call).
 - **[Unwind links](app/src/app/page.tsx)**: a curated set of links (Tetris, explore.org, r/aww, The Useless Web, 2048) shown after any response except the serious pathway, for stepping away instead of continuing to engage.
-- **[Emergency numbers reference](app/src/app/emergency-numbers/page.tsx)**: a region-then-country dropdown showing a general emergency phone number. Deliberately **locked**: not wired into the self-harm/in-danger pathway (which still points to `findahelpline.com`), and clearly marked per-entry as drafted from general knowledge rather than independently verified. Built instead of IP-based geolocation, which was explicitly ruled out. See the maintenance note in [`emergencyNumbers.ts`](app/src/lib/emergencyNumbers.ts) for how to verify and unlock it later.
+- **[Emergency numbers reference](app/src/app/emergency-numbers/page.tsx)**: a region-then-country dropdown showing a general emergency phone number, both standalone and embedded directly in the self-harm/in-danger result as a secondary option alongside `findahelpline.com`, which stays the primary, actively-maintained pointer. Most countries also show smaller-font secondary numbers (non-emergency police, domestic-violence hotlines, poison control, etc.) where there was reasonable confidence in a real, stable number. Entries are clearly marked per-entry as drafted from general knowledge rather than independently verified. Built instead of IP-based geolocation, which was explicitly ruled out. See the maintenance note in [`emergencyNumbers.ts`](app/src/lib/emergencyNumbers.ts) for how to verify each entry.
 - A couple of things are hidden in here too. You'll know it when you find one.
 
 ## The full experience (planned)
@@ -96,7 +96,7 @@ The pipeline, safety architecture, transparency features, multilingual support, 
 
 **Visual and sensory identity.** A pixel-art T-Rex mascot built around "small arms, big feelings": a distinct sprite state per tone and pathway (raised-eyebrow for Still You Just Cooler, a tiny necktie for Professional & Clear, an olive branch for Maximum Diplomacy, a stomping idle/loading animation, a stop-sign hold for witty-pathway blocks), deliberately *no* sprite or mascot treatment at all for Hard NO or the serious pathway. Web Audio square-wave click sound effects per tone, generated with oscillator nodes rather than licensed audio files, on top of the category-aware tones already in place for the firm and serious pathways. A pixelated prehistoric background, a retro pixel font, and a pixel T-Rex favicon. The screenshot-branded cards described under Sharing are a functional stand-in for now, not the real thing: actual pixel art needs either a generated image asset or a human-supplied one, neither of which exists yet.
 
-**Geo-routing.** Explicitly decided against: IP-based geolocation was ruled out in favor of the locked, user-picked region/country dropdown described under Extras. If that tool gets verified and unlocked later, it would replace or supplement the current `findahelpline.com` fallback for the self-harm/in-danger pathway specifically (the emergency-numbers dropdown covers general emergency services, not crisis lines).
+**Geo-routing.** Explicitly decided against: IP-based geolocation was ruled out in favor of the user-picked region/country dropdown described under Extras, which is now wired into the self-harm/in-danger pathway as a secondary option next to `findahelpline.com` (the emergency-numbers dropdown covers general emergency services, not crisis lines specifically). What's still pending is independently verifying each entry, currently drafted from general knowledge.
 
 **Bonus features under consideration:**
 - **Director's Cut**: a fourth, clearly labeled "for your eyes only, do not send" version, maximally unfiltered.
@@ -105,9 +105,9 @@ The pipeline, safety architecture, transparency features, multilingual support, 
 
 ## Status
 
-**Shipped:** core two-stage pipeline, all five pathways, transparency features, House Rules with a live classifier sandbox, multilingual classification/generation/self-harm-content/quotes, Rant Intensity Score, five personas, rage thermometer, category-aware sound, sharing (X intent, output-only permalinks, OG image, screenshot branding), self-harm calming visual redesign, unwind links, locked emergency-numbers reference tool, `/status`, `/dark-patterns`, bookmarklet, rate limiting, no-raw-text logging.
+**Shipped:** core two-stage pipeline, all five pathways, transparency features, House Rules with a live classifier sandbox, multilingual classification/generation/self-harm-content/quotes, Rant Intensity Score, five personas, rage thermometer, category-aware sound, sharing (X intent, output-only permalinks, OG image, screenshot branding), self-harm calming visual redesign, unwind links, emergency-numbers reference tool wired into the self-harm/in-danger pathway with per-country secondary helplines, `/status`, `/dark-patterns`, bookmarklet, rate limiting, no-raw-text logging, content-editing (not just tone-softening) for the Professional & Clear and Maximum Diplomacy tiers.
 
-**Planned:** the real pixel-art visual identity and remaining sound design, verifying and unlocking the emergency-numbers tool, a native-speaker review pass on the non-English self-harm/quote translations, the three bonus features under consideration (Director's Cut, diff-style explanations, dialogue-context field), and deploying to Vercel.
+**Planned:** the real pixel-art visual identity and remaining sound design, independently verifying the emergency-numbers entries (currently drafted from general knowledge), a native-speaker review pass on the non-English self-harm/quote translations, the three bonus features under consideration (Director's Cut, diff-style explanations, dialogue-context field), and deploying to Vercel.
 
 Full spec: [`t-rant-MASTER-BUILD-BRIEF.md`](t-rant-MASTER-BUILD-BRIEF.md), [`t-rant-technical-spec.md`](t-rant-technical-spec.md), [`t-rant-safety-legal-update.md`](t-rant-safety-legal-update.md), [`t-rant-quotes-by-category.md`](t-rant-quotes-by-category.md), [`t-rant-phase2-brief.md`](t-rant-phase2-brief.md).
 

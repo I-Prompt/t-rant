@@ -1,3 +1,9 @@
 # Not part of this project's spec — covers unrelated portfolio projects
 # and personal details that don't belong in this repo.
 portfolio-projects-roadmap.md
+
+# Local Claude Code dev-server config: machine/session-specific, and can
+# collide with another session's config of the same name. Custom commands
+# under .claude/commands/ ARE tracked (see below) since those are shared
+# project tooling, not local machine state.
+.claude/launch.json

@@ -125,14 +125,83 @@ function mockIntensity(text: string): number {
   return Math.min(10, Math.max(1, Math.round(score)));
 }
 
+// Crude stand-in for a real tone rewrite. Cannot understand meaning the way
+// the real Haiku-backed generator can (see generator.ts) - this is regex
+// substitution, not comprehension - but it goes further than punctuation
+// cleanup so the three tiers are visibly different from the input AND from
+// each other, matching what the real generator is instructed to do. The
+// UI's own tone headers already say which tier is which, so no
+// "[mock: ...]" prefix belongs in the text itself.
+const MILD_PROFANITY = /\b(fuck(ing)?|shit|damn|hell|crap|goddamn)\b/gi;
+
+// still_you_just_cooler keeps every point and detail (per generator.ts's
+// instructions), only sanding off swearing/shouting - never softens word
+// choice or drops content.
+function stillYouJustCoolerMock(text: string): string {
+  const deSweared = text.replace(MILD_PROFANITY, "").replace(/\s{2,}/g, " ").trim();
+  const deShouted = deSweared.replace(/\b[A-Z]{3,}\b/g, (w) => w[0] + w.slice(1).toLowerCase());
+  const deEmphasized = deShouted.replace(/!{2,}/g, ".");
+  return deEmphasized || text;
+}
+
+// professional_clear and maximum_diplomacy also soften word choice...
+const INTENSITY_SOFTENERS: [RegExp, string][] = [
+  [/\bnever\b/gi, "rarely"],
+  [/\balways\b/gi, "often"],
+  [/\bunacceptable\b/gi, "not sustainable"],
+  [/\bridiculous\b/gi, "frustrating"],
+  [/\bhate\b/gi, "really dislike"],
+  [/\bworst\b/gi, "most difficult"],
+  [/\bfurious\b/gi, "frustrated"],
+  [/\bcrazy\b/gi, "hard to manage"],
+];
+
+function applySofteners(text: string): string {
+  return INTENSITY_SOFTENERS.reduce((acc, [pattern, replacement]) => acc.replace(pattern, replacement), text);
+}
+
+// ...and drop specific side comparisons/accusations that read as
+// inflammatory or tangential rather than the core professional concern
+// (e.g. "you're getting a commission for that and I don't!") - crude
+// sentence-level pattern match, same spirit as generator.ts's instruction
+// to edit content, not just tone, for these two tiers only.
+const COMPARISON_SENTENCE = /\byou'?re\b[^.!?]*\b(?:and|but)\b[^.!?]*\bi\b[^.!?]*\b(?:don'?t|do not|didn'?t|never)\b/i;
+
+function stripComparisons(text: string): string {
+  const sentences = text.match(/[^.!?]+[.!?]*/g) ?? [text];
+  const kept = sentences.filter((s) => !COMPARISON_SENTENCE.test(s));
+  const result = kept.join(" ").replace(/\s{2,}/g, " ").trim();
+  return result || text;
+}
+
+function professionalClearMock(text: string): string {
+  const body = applySofteners(stripComparisons(stillYouJustCoolerMock(text)));
+  return `I'd like to raise the following: ${body}`;
+}
+
+function maximumDiplomacyMock(text: string): string {
+  const body = applySofteners(stripComparisons(stillYouJustCoolerMock(text)))
+    .replace(/\bI (want|need)\b/gi, "I was hoping we could")
+    .replace(/\byou (should|must|need to)\b/gi, "it might help if you could");
+  return `I hope this finds you well - I wanted to gently mention: ${body}`;
+}
+
 export function mockGenerateToneVersions(text: string): ToneVersions {
   return {
-    stillYouJustCooler: `[mock: still-you-just-cooler] ${text}`,
-    professionalClear: `[mock: professional-clear] I'd like to raise the following: ${text}`,
-    maximumDiplomacy: `[mock: maximum-diplomacy] I hope this finds you well - I wanted to gently mention: ${text}`,
+    stillYouJustCooler: stillYouJustCoolerMock(text),
+    professionalClear: professionalClearMock(text),
+    maximumDiplomacy: maximumDiplomacyMock(text),
   };
 }
 
+const PERSONA_MOCK_WRAPPER: Record<Persona, (body: string) => string> = {
+  corporate_memo: (b) => `Per my last message, circling back to align on next steps: ${b}`,
+  victorian: (b) => `Dearest reader, I must with great formality convey the following: ${b}`,
+  cease_and_desist: (b) => `Be advised: the undersigned hereby raises the following matter: ${b}`,
+  haiku: (b) => b,
+  nature_documentary: (b) => `Here, in its natural habitat, the aggrieved worker is observed to say: ${b}`,
+};
+
 export function mockGeneratePersonaVersion(text: string, persona: Persona): string {
-  return `[mock: ${persona}] ${text}`;
+  return PERSONA_MOCK_WRAPPER[persona](stillYouJustCoolerMock(text));
 }

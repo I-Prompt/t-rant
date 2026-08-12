@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { EMERGENCY_NUMBERS } from "@/lib/emergencyNumbers";
 import { SELF_HARM_CONTENT, SERIOUS_RESOURCE_URL } from "@/lib/selfHarmContent";
 import {
   ApiRantResponse,
@@ -13,7 +14,6 @@ import {
   PersonaApiResponse,
   RantResponse,
   RateLimitInfo,
-  SUPPORTED_LANGUAGES,
   SupportedLanguage,
   ToneVersions,
 } from "@/lib/types";
@@ -24,10 +24,52 @@ const ANTHROPIC_TRAINING_POLICY_URL =
   "https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training";
 const GITHUB_LOGGING_CODE_URL = "https://github.com/I-Prompt/t-rant/tree/main/app/src/lib";
 
-function detectBrowserLanguage(): SupportedLanguage {
-  if (typeof navigator === "undefined") return "en";
-  const lang = navigator.language?.slice(0, 2).toLowerCase();
-  return (SUPPORTED_LANGUAGES as readonly string[]).includes(lang) ? (lang as SupportedLanguage) : "en";
+// The "get help now" buttons bypass classification entirely — by design,
+// they work with an empty textarea, so there's often no text to detect a
+// language from. navigator.language (the browser/OS locale) turned out to be
+// an unreliable signal for this: it reflects OS/browser configuration, not
+// what the person is actually reading in, and produced non-English crisis
+// text for people typing and reading in English. So it's not used at all
+// here anymore. When there's typed text, use it as a signal (crude
+// script/keyword heuristic, not real language detection); otherwise default
+// to English, which matches the rest of the site's untranslated chrome.
+const NON_ENGLISH_HINTS: [Exclude<SupportedLanguage, "en">, RegExp][] = [
+  ["sv", /[åÅ]/g],
+  ["sv", /\b(jag|inte|är|och|men|kan|aldrig|varför|hjälp)\b/gi],
+  ["de", /[ßÄÖÜäöü]/g],
+  ["de", /\b(ich|nicht|und|ist|mich|mir|warum|aber|sehr|kann|nie|hilfe)\b/gi],
+  ["es", /[¿¡ñÑ]/g],
+  ["es", /\b(yo|no|soy|pero|nunca|porque|está|ayuda|socorro)\b/gi],
+  ["fr", /[çœÇŒ]/g],
+  ["fr", /\b(je|ne|pas|suis|mais|jamais|pourquoi|aide|au secours)\b/gi],
+  ["it", /\b(io|non|sono|ma|mai|perché|aiuto|soccorso)\b/gi],
+];
+
+function guessTextLanguage(text: string): SupportedLanguage {
+  if (/[а-яёА-ЯЁ]/.test(text)) return "ru";
+
+  const scores = new Map<SupportedLanguage, number>();
+  for (const [lang, pattern] of NON_ENGLISH_HINTS) {
+    const matches = text.match(pattern);
+    if (matches) scores.set(lang, (scores.get(lang) ?? 0) + matches.length);
+  }
+
+  let best: SupportedLanguage = "en";
+  let bestScore = 0;
+  for (const [lang, score] of scores) {
+    if (score > bestScore) {
+      best = lang;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+// Prefer the typed draft's language; default to English (never the browser
+// locale, see above) when there's no text to go on at all.
+function resolveHelpLanguage(text: string): SupportedLanguage {
+  const trimmed = text.trim();
+  return trimmed ? guessTextLanguage(trimmed) : "en";
 }
 
 const EMPTY_FLAGGED: FlaggedInfo = { originalText: "", flaggedPhrases: [], reason: "" };
@@ -167,7 +209,7 @@ export default function Home() {
   function showHelpNow(kind: "self_harm" | "in_danger") {
     setError(null);
     setSharedData(null);
-    const content = SELF_HARM_CONTENT[detectBrowserLanguage()];
+    const content = SELF_HARM_CONTENT[resolveHelpLanguage(text)];
     setResult({
       pathway: "serious",
       message: kind === "self_harm" ? content.selfHarmMessage : content.inDangerMessage,
@@ -197,28 +239,6 @@ export default function Home() {
         </p>
       )}
 
-      <div
-        style={{
-          margin: "16px 0",
-          padding: 12,
-          border: "2px solid #6b8f71",
-          borderRadius: 6,
-          background: "#f4f8f5",
-          fontSize: 14,
-        }}
-      >
-        <p style={{ margin: "0 0 8px" }}>
-          However you got to this page: if you're thinking about hurting yourself, or someone is
-          hurting you, you don't need to write anything or explain first. Tap one of these now:
-        </p>
-        <button type="button" onClick={() => showHelpNow("self_harm")} style={{ marginRight: 8 }}>
-          I'm thinking about hurting myself
-        </button>
-        <button type="button" onClick={() => showHelpNow("in_danger")}>
-          Someone is hurting me
-        </button>
-      </div>
-
       <BrandCard>
         <form onSubmit={handleSubmit}>
           <textarea
@@ -238,6 +258,8 @@ export default function Home() {
           </div>
         </form>
       </BrandCard>
+
+      <HelpNowBar onHelp={showHelpNow} />
 
       {rateLimit && (
         <p style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
@@ -319,6 +341,117 @@ function RageThermometer({ text }: { text: string }) {
   );
 }
 
+// Deliberately quiet, not hidden: always visible below the input so it's
+// findable without hunting, but styled as a small text line rather than a
+// bordered callout, since it isn't the main point of the page. Kept below
+// the form (not above it) so it doesn't compete with the actual product for
+// first-glance attention.
+function HelpNowBar({ onHelp }: { onHelp: (kind: "self_harm" | "in_danger") => void }) {
+  const linkButtonStyle: React.CSSProperties = {
+    background: "none",
+    border: "none",
+    padding: 0,
+    font: "inherit",
+    color: "#7a8a7a",
+    textDecoration: "underline",
+    cursor: "pointer",
+  };
+  return (
+    <p style={{ fontSize: 12.5, color: "#999", margin: "8px 0 0" }}>
+      No need to type anything first if you're thinking about hurting yourself, or someone is
+      hurting you:{" "}
+      <button type="button" onClick={() => onHelp("self_harm")} style={linkButtonStyle}>
+        I'm thinking about hurting myself
+      </button>
+      {" · "}
+      <button type="button" onClick={() => onHelp("in_danger")} style={linkButtonStyle}>
+        Someone is hurting me
+      </button>
+    </p>
+  );
+}
+
+// Region -> country -> general emergency number picker, embedded directly in
+// the self-harm/in-danger result. findahelpline.com (above) stays the
+// primary, actively-maintained pointer; this is a secondary option for
+// someone who needs a local emergency line right now. Numbers are drafted
+// from general knowledge, not independently verified (see
+// src/lib/emergencyNumbers.ts), so that caveat stays visible here too rather
+// than implying more authority than the data actually has.
+function EmergencyNumbersPicker() {
+  const [regionIndex, setRegionIndex] = useState<number | null>(null);
+  const [countryIndex, setCountryIndex] = useState<number | null>(null);
+
+  const region = regionIndex !== null ? EMERGENCY_NUMBERS[regionIndex] : null;
+  const entry = region && countryIndex !== null ? region.countries[countryIndex] : null;
+
+  return (
+    <div
+      style={{
+        margin: "20px 0",
+        padding: 16,
+        border: "1px solid #c9c2a6",
+        borderRadius: 8,
+        background: "#f0ece0",
+      }}
+    >
+      <p style={{ margin: "0 0 4px", fontWeight: 600, color: "#3f473f" }}>Local emergency number</p>
+      <p style={{ margin: "0 0 10px", fontSize: 13, color: "#7a7259" }}>
+        Drafted from general knowledge, not independently verified: if you're unsure, the link above
+        is the actively maintained option.
+      </p>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <select
+          value={regionIndex ?? ""}
+          onChange={(e) => {
+            setRegionIndex(e.target.value === "" ? null : Number(e.target.value));
+            setCountryIndex(null);
+          }}
+          style={{ padding: 6, fontSize: 14 }}
+        >
+          <option value="">Region</option>
+          {EMERGENCY_NUMBERS.map((r, i) => (
+            <option key={r.region} value={i}>
+              {r.region}
+            </option>
+          ))}
+        </select>
+        {region && (
+          <select
+            value={countryIndex ?? ""}
+            onChange={(e) => setCountryIndex(e.target.value === "" ? null : Number(e.target.value))}
+            style={{ padding: 6, fontSize: 14 }}
+          >
+            <option value="">Country</option>
+            {region.countries.map((c, i) => (
+              <option key={c.country} value={i}>
+                {c.country}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      {entry && (
+        <div style={{ marginTop: 10 }}>
+          <p style={{ margin: 0 }}>
+            <span style={{ fontSize: 26, fontWeight: 700, color: "#3f473f" }}>{entry.number}</span>
+            {entry.note && <span style={{ marginLeft: 8, fontSize: 13, color: "#7a7259" }}>{entry.note}</span>}
+          </p>
+          {entry.helplines && entry.helplines.length > 0 && (
+            <ul style={{ margin: "6px 0 0", padding: 0, listStyle: "none", fontSize: 12, color: "#8a8265" }}>
+              {entry.helplines.map((h) => (
+                <li key={h.label}>
+                  {h.label}: {h.number}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ResultView({ result, originalText }: { result: RantResponse; originalText: string }) {
   switch (result.pathway) {
     case "hard_no":
@@ -365,6 +498,7 @@ function ResultView({ result, originalText }: { result: RantResponse; originalTe
             </p>
             <p style={{ margin: 0, color: "#3f473f" }}>{result.emergencyNote}</p>
           </div>
+          <EmergencyNumbersPicker />
           {result.helpfulThings && result.helpfulThings.length > 0 && (
             <HelpfulThingsList items={result.helpfulThings} />
           )}

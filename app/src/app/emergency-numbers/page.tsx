@@ -21,7 +21,8 @@ export default function EmergencyNumbers() {
       <div style={{ padding: 12, border: "1px solid #e0c060", borderRadius: 6, background: "#fff8e1", fontSize: 14 }}>
         {EMERGENCY_NUMBERS_STATUS.reason} Numbers here were drafted from general knowledge, not looked
         up live: check the "last verified" note before relying on one. If you're in crisis right now,
-        the buttons on the main page point to findahelpline.com, which is the actively maintained path.
+        findahelpline.com (shown on the main page, and above this picker there too) is the actively
+        maintained path.
       </div>
 
       <div style={{ marginTop: 20 }}>
@@ -66,6 +67,15 @@ export default function EmergencyNumbers() {
           <p style={{ margin: "0 0 4px", fontSize: 14, color: "#555" }}>{entry.country}</p>
           <p style={{ margin: "0 0 8px", fontSize: 32, fontWeight: 700 }}>{entry.number}</p>
           {entry.note && <p style={{ margin: "0 0 8px", fontSize: 13, color: "#777" }}>{entry.note}</p>}
+          {entry.helplines && entry.helplines.length > 0 && (
+            <ul style={{ margin: "0 0 8px", padding: 0, listStyle: "none", fontSize: 12, color: "#888" }}>
+              {entry.helplines.map((h) => (
+                <li key={h.label}>
+                  {h.label}: {h.number}
+                </li>
+              ))}
+            </ul>
+          )}
           <p style={{ margin: 0, fontSize: 12, color: entry.lastVerified ? "#5c8a5c" : "#b06a00" }}>
             {entry.lastVerified ? `Last verified: ${entry.lastVerified}` : "Not yet independently verified"}
           </p>

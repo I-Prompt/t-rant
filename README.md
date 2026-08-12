@@ -6,7 +6,7 @@ Paste a heated draft message - a Slack rant, an angry email - and get back three
 
 "Angry message → professional rewrite" tools already exist (Angry Email Translator, Anger Translator, AI Corporate Translator, among others). What's different here is two things: a guardrail architecture with dedicated, isolated safety classification, not three prompt variations bolted onto an unguarded text box, and a deliberate bet on **provable transparency** over "trust us": every block shows you exactly what tripped it, in your own words.
 
-A pixel-art T-Rex identity, sound design, and a handful of bonus features are still ahead (see [The full experience](#the-full-experience-planned) below) - everything else described here is built and working today.
+A true pixel-art T-Rex identity, sound design beyond the category-aware tones, and a handful of bonus features are still ahead (see [The full experience](#the-full-experience-planned) below) - everything else described here, including the self-harm calming redesign, unwind links, and screenshot branding, is built and working today.
 
 ## Architecture
 
@@ -59,7 +59,7 @@ The throughline for everything below: don't just claim something's safe or priva
 |---|---|---|
 | Ordinary venting/frustration | **Clean** | Full three-tier rewrite, Rant Intensity Score, optional personas |
 | CSAE, trafficking, extremist content, doxxing, fraud, weapons instructions, actual crime planning | **Hard NO** | Flat, immediate decline. No engagement, no cleverness. |
-| Self-harm, suicidal ideation, eating-disorder content, or disclosure of being harmed by someone else (including indirect phrasing, not just literal trigger words) | **Serious** | No mascot, no jokes. Resource link plus emergency note. Self-harm gets a longer, creator-written message with practical things that helped; biased toward over-flagging rather than under-flagging. |
+| Self-harm, suicidal ideation, eating-disorder content, or disclosure of being harmed by someone else (including indirect phrasing, not just literal trigger words) | **Serious** | No mascot, no jokes, no screenshot branding. Calming visual treatment (warm beige, muted sage/soft blue, nothing bright or saturated). Resource link plus emergency note. Self-harm gets a longer, creator-written message with practical things that helped; biased toward over-flagging rather than under-flagging. |
 | Specific, credible threat of violence against a named real person (including euphemistic/indirect phrasing) | **Firm** | Polite, on-brand decline, paired with a distinct hard-stop audio tone: not comedic. |
 | Prompt-injection attempts, hate speech, sexual content, other off-purpose use | **Witty** | Declines the request, pairs it with a quote picked server-side from a curated library (so it can't be tampered with client-side). |
 
@@ -80,22 +80,23 @@ Deliberately **not** translated: House Rules, site chrome, `/status`, `/dark-pat
 - **Copy shareable link**: encodes only the *rewritten output* (never your original draft) into the URL. No backend storage.
 - **Auto-generated Open Graph image**: code-generated at request time ([`opengraph-image.tsx`](app/src/app/opengraph-image.tsx)), so shared links get a real preview card even before the pixel-art identity exists.
 - **Bookmarklet**: highlight text anywhere in your browser, click the bookmark, land on T-Rant with it pre-filled. See [`/bookmarklet`](app/src/app/bookmarklet/page.tsx).
+- **Screenshot branding**: the input box and every non-serious result render inside a bordered card with a "🦖 T-Rant" band at both the top and bottom, so a manual screenshot carries the mark no matter where someone crops it. A placeholder for the real pixel-art identity, not a substitute for it.
 
 ## Extras
 
 - **Rant Intensity Score**: 1-10 rating of how heated the input reads, returned by the classifier alongside its label.
 - **Rage thermometer**: a client-side-only heuristic meter that fills as you type, before you even submit (no API call).
+- **[Unwind links](app/src/app/page.tsx)**: a curated set of links (Tetris, explore.org, r/aww, The Useless Web, 2048) shown after any response except the serious pathway, for stepping away instead of continuing to engage.
+- **[Emergency numbers reference](app/src/app/emergency-numbers/page.tsx)**: a region-then-country dropdown showing a general emergency phone number. Deliberately **locked**: not wired into the self-harm/in-danger pathway (which still points to `findahelpline.com`), and clearly marked per-entry as drafted from general knowledge rather than independently verified. Built instead of IP-based geolocation, which was explicitly ruled out. See the maintenance note in [`emergencyNumbers.ts`](app/src/lib/emergencyNumbers.ts) for how to verify and unlock it later.
 - A couple of things are hidden in here too. You'll know it when you find one.
 
 ## The full experience (planned)
 
 The pipeline, safety architecture, transparency features, multilingual support, and sharing described above are all built and working. The rest of the intended experience is still ahead:
 
-**Visual and sensory identity.** A pixel-art T-Rex mascot built around "small arms, big feelings": a distinct sprite state per tone and pathway (raised-eyebrow for Still You Just Cooler, a tiny necktie for Professional & Clear, an olive branch for Maximum Diplomacy, a stomping idle/loading animation, a stop-sign hold for witty-pathway blocks), deliberately *no* sprite or mascot treatment at all for Hard NO or the serious pathway. Web Audio square-wave click sound effects per tone, generated with oscillator nodes rather than licensed audio files, on top of the category-aware tones already in place for the firm and serious pathways. A pixelated prehistoric background, a retro pixel font, and a pixel T-Rex favicon.
+**Visual and sensory identity.** A pixel-art T-Rex mascot built around "small arms, big feelings": a distinct sprite state per tone and pathway (raised-eyebrow for Still You Just Cooler, a tiny necktie for Professional & Clear, an olive branch for Maximum Diplomacy, a stomping idle/loading animation, a stop-sign hold for witty-pathway blocks), deliberately *no* sprite or mascot treatment at all for Hard NO or the serious pathway. Web Audio square-wave click sound effects per tone, generated with oscillator nodes rather than licensed audio files, on top of the category-aware tones already in place for the firm and serious pathways. A pixelated prehistoric background, a retro pixel font, and a pixel T-Rex favicon. The screenshot-branded cards described under Sharing are a functional stand-in for now, not the real thing: actual pixel art needs either a generated image asset or a human-supplied one, neither of which exists yet.
 
-**Self-harm pathway refinements.** The messaging and structure are done; two things aren't yet: a calming visual redesign specifically for that screen (muted sage/moss green and soft blue, warm beige, explicitly no bright saturated colors and no gamified elements), and IP-based geolocation (server-side, no permission prompt) to route to region-specific resources, such as Samaritans in Ireland and the UK or 988 in the US, with findahelpline.com as the fallback everywhere else. Currently every region gets the findahelpline.com fallback.
-
-**Unwind links.** A curated set of 3-4 links shown after a response, for someone who'd rather step away than keep engaging: Tetris's official site, explore.org's live animal cams, r/aww, and a small puzzle like 2048 or Wordle, with a plainly worded disclaimer that these are outside links, not vetted or affiliated.
+**Geo-routing.** Explicitly decided against: IP-based geolocation was ruled out in favor of the locked, user-picked region/country dropdown described under Extras. If that tool gets verified and unlocked later, it would replace or supplement the current `findahelpline.com` fallback for the self-harm/in-danger pathway specifically (the emergency-numbers dropdown covers general emergency services, not crisis lines).
 
 **Bonus features under consideration:**
 - **Director's Cut**: a fourth, clearly labeled "for your eyes only, do not send" version, maximally unfiltered.
@@ -104,9 +105,9 @@ The pipeline, safety architecture, transparency features, multilingual support, 
 
 ## Status
 
-**Shipped:** core two-stage pipeline, all five pathways, transparency features, House Rules with a live classifier sandbox, multilingual classification/generation/self-harm-content/quotes, Rant Intensity Score, five personas, rage thermometer, category-aware sound, sharing (X intent, output-only permalinks, OG image), `/status`, `/dark-patterns`, bookmarklet, rate limiting, no-raw-text logging.
+**Shipped:** core two-stage pipeline, all five pathways, transparency features, House Rules with a live classifier sandbox, multilingual classification/generation/self-harm-content/quotes, Rant Intensity Score, five personas, rage thermometer, category-aware sound, sharing (X intent, output-only permalinks, OG image, screenshot branding), self-harm calming visual redesign, unwind links, locked emergency-numbers reference tool, `/status`, `/dark-patterns`, bookmarklet, rate limiting, no-raw-text logging.
 
-**Planned:** everything in [The full experience](#the-full-experience-planned) above, a native-speaker review pass on the non-English self-harm/quote translations, and deploying to Vercel.
+**Planned:** the real pixel-art visual identity and remaining sound design, verifying and unlocking the emergency-numbers tool, a native-speaker review pass on the non-English self-harm/quote translations, the three bonus features under consideration (Director's Cut, diff-style explanations, dialogue-context field), and deploying to Vercel.
 
 Full spec: [`t-rant-MASTER-BUILD-BRIEF.md`](t-rant-MASTER-BUILD-BRIEF.md), [`t-rant-technical-spec.md`](t-rant-technical-spec.md), [`t-rant-safety-legal-update.md`](t-rant-safety-legal-update.md), [`t-rant-quotes-by-category.md`](t-rant-quotes-by-category.md), [`t-rant-phase2-brief.md`](t-rant-phase2-brief.md).
 

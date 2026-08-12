@@ -201,15 +201,18 @@ export default function Home() {
         style={{
           margin: "16px 0",
           padding: 12,
-          border: "1px solid #ddd",
+          border: "2px solid #6b8f71",
           borderRadius: 6,
-          background: "#fafcfa",
+          background: "#f4f8f5",
           fontSize: 14,
         }}
       >
-        <p style={{ margin: "0 0 8px" }}>Not here to rewrite a message right now?</p>
+        <p style={{ margin: "0 0 8px" }}>
+          However you got to this page: if you're thinking about hurting yourself, or someone is
+          hurting you, you don't need to write anything or explain first. Tap one of these now:
+        </p>
         <button type="button" onClick={() => showHelpNow("self_harm")} style={{ marginRight: 8 }}>
-          I'm struggling, or thinking about hurting myself
+          I'm thinking about hurting myself
         </button>
         <button type="button" onClick={() => showHelpNow("in_danger")}>
           Someone is hurting me

@@ -219,23 +219,25 @@ export default function Home() {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          maxLength={MAX_CHARS}
-          rows={8}
-          style={{ width: "100%", fontSize: 16, padding: 8 }}
-          placeholder="What's got you fired up?"
-        />
-        <RageThermometer text={text} />
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-          <span>{text.length} / {MAX_CHARS}</span>
-          <button type="submit" disabled={loading || !text.trim()}>
-            {loading ? "Thinking..." : "Translate"}
-          </button>
-        </div>
-      </form>
+      <BrandCard>
+        <form onSubmit={handleSubmit}>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            maxLength={MAX_CHARS}
+            rows={8}
+            style={{ width: "100%", fontSize: 16, padding: 8 }}
+            placeholder="What's got you fired up?"
+          />
+          <RageThermometer text={text} />
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+            <span>{text.length} / {MAX_CHARS}</span>
+            <button type="submit" disabled={loading || !text.trim()}>
+              {loading ? "Thinking..." : "Translate"}
+            </button>
+          </div>
+        </form>
+      </BrandCard>
 
       {rateLimit && (
         <p style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
@@ -245,11 +247,44 @@ export default function Home() {
 
       {error && <p style={{ color: "crimson" }}>{error}</p>}
 
-      {result && <ResultView result={result} originalText={submittedText} />}
+      {result &&
+        (result.pathway === "serious" ? (
+          <ResultView result={result} originalText={submittedText} />
+        ) : (
+          <BrandCard>
+            <ResultView result={result} originalText={submittedText} />
+          </BrandCard>
+        ))}
       {result && result.pathway !== "serious" && <UnwindLinks />}
 
       <PrivacyNotice />
     </main>
+  );
+}
+
+// Branded header + footer around the input and (non-serious) results, so a
+// screenshot of either one carries the T-Rant mark no matter where someone
+// crops it — top, bottom, or wherever they stop scrolling. Deliberately a
+// different color scheme from the calming palette (serious pathway) so
+// that state stays visually distinct and un-branded, per
+// t-rant-safety-legal-update.md section 1. This is a placeholder for the
+// real pixel-art identity, not a replacement for it — see README "The full
+// experience (planned)".
+function BrandCard({ children }: { children: React.ReactNode }) {
+  const bandStyle: React.CSSProperties = {
+    padding: "6px 14px",
+    background: "#2d2a24",
+    color: "#f5f0e6",
+    fontSize: 13,
+    fontWeight: 700,
+    letterSpacing: 0.3,
+  };
+  return (
+    <div style={{ border: "1px solid #ddd", borderRadius: 8, overflow: "hidden", margin: "16px 0" }}>
+      <div style={bandStyle}>🦖 T-Rant</div>
+      <div style={{ padding: 16 }}>{children}</div>
+      <div style={{ ...bandStyle, fontWeight: 400, fontSize: 12 }}>🦖 T-Rant · small arms, big feelings</div>
+    </div>
   );
 }
 

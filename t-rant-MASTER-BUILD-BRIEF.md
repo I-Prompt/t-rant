@@ -1,13 +1,16 @@
 # T-Rant — Master Build Brief
 
-**Read this file first.** It indexes the other three files, and — importantly — captures a chunk of decisions that only ever existed in conversation and never made it into a file until now. If you only send Claude Code one thing to start with, send this one, and point it at the other three alongside it.
+**Read this file first.** It indexes the other files, and — importantly — captures a chunk of decisions that only ever existed in conversation and never made it into a file until now. If you only send Claude Code one thing to start with, send this one, and point it at the others alongside it.
+
+**Phase 1 (core pipeline) is built and working** — see the repo's own README for current status. **Phase 2 planning is captured in `t-rant-phase2-brief.md`** (file 5 below): transparency/trust features, House Rules page, shareability, multilingual scope, quote localization. Read it after the original four files if resuming this project for phase 2 work.
 
 ## Files in this project folder
 
-1. **This file** — overview, the gaps, open decisions, suggested build order.
-2. **`t-rant-technical-spec.md`** — guardrail architecture (2-stage classifier + generation pipeline), the four response pathways, operational parameters, visual/sprite design, sound design.
-3. **`t-rant-safety-legal-update.md`** — self-harm design specifics (colors, geolocation, resource routing), the full content categorization table, GDPR/legal considerations, Tetris research + link-out decision, unwind links with copy, bookmarklet mechanics and disclaimer copy, general site disclaimer.
-4. **`t-rant-quotes-by-category.md`** — the 86-quote library, categorized and formatted. This is the current source of truth for quotes — an earlier draft inside the technical spec has been marked superseded.
+1. **This file** — overview, the gaps, open decisions, suggested build order (phase 1).
+2. **`t-rant-technical-spec.md`** — guardrail architecture (2-stage classifier + generation pipeline), the four response pathways, operational parameters, visual/sprite design, sound design. Partially superseded — see file 5 for a classifier output schema addition.
+3. **`t-rant-safety-legal-update.md`** — self-harm design specifics (colors, geolocation, resource routing), the full content categorization table, GDPR/legal considerations, Tetris research + link-out decision, unwind links with copy, bookmarklet mechanics and disclaimer copy, general site disclaimer. Partially superseded — see file 5 for a per-language resource text addition.
+4. **`t-rant-quotes-by-category.md`** — the 86-quote library, categorized and formatted. This is the current source of truth for **English** quotes — an earlier draft inside the technical spec has been marked superseded. File 5 covers the non-English quote sets.
+5. **`t-rant-phase2-brief.md`** — phase 2 decisions: transparency features, House Rules page, shareability, multilingual scope, quote localization, unconventional UX additions.
 
 ## What's in this file that isn't anywhere else
 

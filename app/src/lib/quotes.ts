@@ -1,6 +1,9 @@
 // Ported from ../../t-rant-quotes-by-category.md — that file remains the
-// source of truth. Selection happens server-side so it can't be tampered
-// with from the browser.
+// source of truth for the English 86-quote library. Selection happens
+// server-side so it can't be tampered with from the browser.
+
+import { LOCALIZED_QUOTES } from "./quotesLocalized";
+import { SupportedLanguage } from "./types";
 
 export interface Quote {
   text: string;
@@ -114,7 +117,10 @@ const QUOTES_BY_TRIGGER: Record<WittyTrigger, Quote[]> = {
   other_disallowed: GENERAL_QUOTES,
 };
 
-export function pickQuote(trigger: WittyTrigger): Quote {
-  const pool = QUOTES_BY_TRIGGER[trigger];
+// English uses the full 86-quote library; the other 6 supported languages
+// use a smaller, separately curated 20-quote set (see quotesLocalized.ts)
+// rather than a live translation of the English pool.
+export function pickQuote(trigger: WittyTrigger, language: SupportedLanguage = "en"): Quote {
+  const pool = language === "en" ? QUOTES_BY_TRIGGER[trigger] : LOCALIZED_QUOTES[language][trigger];
   return pool[Math.floor(Math.random() * pool.length)];
 }

@@ -246,6 +246,7 @@ export default function Home() {
       {error && <p style={{ color: "crimson" }}>{error}</p>}
 
       {result && <ResultView result={result} originalText={submittedText} />}
+      {result && result.pathway !== "serious" && <UnwindLinks />}
 
       <PrivacyNotice />
     </main>
@@ -294,10 +295,22 @@ function ResultView({ result, originalText }: { result: RantResponse; originalTe
       );
 
     case "serious":
+      // Calming palette per t-rant-safety-legal-update.md section 1: muted
+      // sage/moss green and soft blue, warm beige rather than stark white,
+      // nothing bright or saturated, no celebratory elements. There's no
+      // pixel mascot built yet, so "no mascot on this screen" is already
+      // true by default.
       return (
-        <div>
+        <div
+          style={{
+            margin: "20px 0",
+            padding: 24,
+            borderRadius: 12,
+            background: "#f5f0e6",
+          }}
+        >
           {result.message.split("\n\n").map((para, i) => (
-            <p key={i} style={{ lineHeight: 1.6, marginBottom: 16 }}>
+            <p key={i} style={{ lineHeight: 1.6, marginBottom: 16, color: "#3f473f" }}>
               {para}
             </p>
           ))}
@@ -307,15 +320,15 @@ function ResultView({ result, originalText }: { result: RantResponse; originalTe
               padding: 16,
               border: "2px solid #6b8f71",
               borderRadius: 8,
-              background: "#f4f8f5",
+              background: "#eef3ee",
             }}
           >
             <p style={{ margin: "0 0 8px", fontWeight: 600 }}>
-              <a href={result.resourceUrl} target="_blank" rel="noopener noreferrer">
+              <a href={result.resourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#4a7a94" }}>
                 {result.resourceUrl}
               </a>
             </p>
-            <p style={{ margin: 0 }}>{result.emergencyNote}</p>
+            <p style={{ margin: 0, color: "#3f473f" }}>{result.emergencyNote}</p>
           </div>
           {result.helpfulThings && result.helpfulThings.length > 0 && (
             <HelpfulThingsList items={result.helpfulThings} />
@@ -500,9 +513,9 @@ function HelpfulThingsList({ items }: { items: HelpfulThing[] }) {
       style={{
         marginTop: 16,
         paddingLeft: 16,
-        borderLeft: "3px solid #ddd",
+        borderLeft: "3px solid #b9c9b0",
         fontSize: 14,
-        color: "#666",
+        color: "#5c6355",
       }}
     >
       <p style={{ marginBottom: 8 }}>A few things that helped me:</p>
@@ -514,7 +527,7 @@ function HelpfulThingsList({ items }: { items: HelpfulThing[] }) {
               <>
                 {item.emphasizeFirstLetter ? (
                   <>
-                    <strong style={{ color: "#333" }}>{item.title[0]}</strong>
+                    <strong style={{ color: "#4a5544" }}>{item.title[0]}</strong>
                     <strong>{item.title.slice(1)}</strong>
                   </>
                 ) : (
@@ -570,6 +583,50 @@ function highlightFlagged(text: string, phrases: string[]) {
     ) : (
       <span key={i}>{part}</span>
     )
+  );
+}
+
+// A curated set of links to step away with, per
+// t-rant-safety-legal-update.md section 5. Not shown after the "serious"
+// pathway — that state stays deliberately sparse, no distractions.
+const UNWIND_LINKS = [
+  { emoji: "🕹️", label: "Tetris", tag: "Stack blocks, not grudges.", href: "https://tetris.com" },
+  { emoji: "🦦", label: "explore.org", tag: "Live animal cams. Zero drama, all whiskers.", href: "https://explore.org" },
+  { emoji: "😻", label: "r/aww", tag: "Scroll until your blood pressure forgives you.", href: "https://reddit.com/r/aww" },
+  { emoji: "🎲", label: "The Useless Web", tag: "One button, zero purpose, somehow it helps.", href: "https://theuselessweb.com" },
+  { emoji: "🧩", label: "2048", tag: "Swap one puzzle for a smaller, friendlier one.", href: "https://play2048.co" },
+];
+
+function UnwindLinks() {
+  return (
+    <section style={{ marginTop: 32 }}>
+      <p style={{ fontSize: 13, color: "#777", fontStyle: "italic" }}>
+        You're leaving T-Rant territory: everything past this point is somebody else's swamp, we
+        don't control it, vouch for it, or get a cut of your afternoon. Wander at your own risk.
+      </p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
+        {UNWIND_LINKS.map((link) => (
+          <a
+            key={link.href}
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "block",
+              padding: "8px 12px",
+              border: "1px solid #ddd",
+              borderRadius: 6,
+              textDecoration: "none",
+              color: "#333",
+              fontSize: 13,
+            }}
+          >
+            <div>{link.emoji} {link.label}</div>
+            <div style={{ color: "#888", fontSize: 12 }}>{link.tag}</div>
+          </a>
+        ))}
+      </div>
+    </section>
   );
 }
 

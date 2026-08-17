@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EMERGENCY_NUMBERS } from "@/lib/emergencyNumbers";
 import { SELF_HARM_CONTENT, SERIOUS_RESOURCE_URL } from "@/lib/selfHarmContent";
+import { playHardStopTone, playStomp, playToneBlip, playWittyWomp, ToneKey } from "@/lib/sounds";
+import { getRexCells, REX_GRID_H, REX_GRID_W, RexPose } from "@/lib/rexSprite";
 import {
   ApiRantResponse,
   CONTEXT_MAX_CHARS,
@@ -95,6 +97,70 @@ interface SharedPayload {
 // Konami code easter egg. Small, on-brand, doesn't need any art assets.
 const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
 
+// --- Pixel T-Rex sprite -----------------------------------------------
+// Code-generated pixel art, no external image assets — geometry lives in
+// lib/rexSprite.ts (shared with the favicon, see app/icon.tsx, so the two
+// can't drift apart) and gets rendered here as SVG rects. See
+// t-rant-technical-spec.md "Visual design" for the pose list - deliberately
+// no sprite at all for hard_no or the serious (self-harm/in-danger)
+// pathway, so those states stay unbranded on purpose.
+const REX_CELL = 8;
+
+function PixelRex({ pose, size = 48, animate = false }: { pose: RexPose; size?: number; animate?: boolean }) {
+  const cells = getRexCells(pose);
+  const w = REX_GRID_W * REX_CELL;
+  const h = REX_GRID_H * REX_CELL;
+
+  return (
+    <svg
+      viewBox={`0 0 ${w} ${h}`}
+      width={size}
+      height={(size * REX_GRID_H) / REX_GRID_W}
+      shapeRendering="crispEdges"
+      aria-hidden="true"
+      style={{ flexShrink: 0 }}
+    >
+      <g>
+        {animate && (
+          <animateTransform
+            attributeName="transform"
+            type="translate"
+            values="0 0; 0 -3; 0 0"
+            dur="0.5s"
+            repeatCount="indefinite"
+          />
+        )}
+        {cells.map((cell, i) => (
+          <rect key={i} x={cell.x * REX_CELL} y={cell.y * REX_CELL} width={REX_CELL} height={REX_CELL} fill={cell.color} />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+// Sprite + heading, one per tone tier. Clicking a heading plays that tier's
+// distinct square-wave blip (see lib/sounds.ts) - a small, silly,
+// click-triggered delight, matching t-rant-phase2-brief.md section 6.
+function ToneHeading({ pose, label, tone, onClick }: { pose: RexPose; label: string; tone: ToneKey; onClick: (tone: ToneKey) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onClick(tone)}
+      style={{
+        all: "unset",
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        cursor: "pointer",
+        marginTop: 20,
+      }}
+    >
+      <PixelRex pose={pose} size={32} />
+      <h2 style={{ margin: 0 }}>{label}</h2>
+    </button>
+  );
+}
+
 export default function Home() {
   const [text, setText] = useState("");
   const [context, setContext] = useState("");
@@ -142,22 +208,19 @@ export default function Home() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  function playHardStopTone() {
+  // Thin wrapper around the lib/sounds.ts oscillator functions: audio is a
+  // nice-to-have, so a failure here should never break the actual response.
+  function playSound(fn: (ctx: AudioContext) => void) {
     try {
       const ctx = audioCtxRef.current;
-      if (!ctx) return;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "square";
-      osc.frequency.value = 140;
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.35);
+      if (ctx) fn(ctx);
     } catch {
-      // Audio is a nice-to-have; never let it break the actual response.
+      // ignore
     }
+  }
+
+  function playTone(tone: ToneKey) {
+    playSound((ctx) => playToneBlip(ctx, tone));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -171,6 +234,7 @@ export default function Home() {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioCtx) audioCtxRef.current = new AudioCtx();
     }
+    playSound(playStomp);
 
     setLoading(true);
     setError(null);
@@ -193,10 +257,12 @@ export default function Home() {
         const { rateLimit: _rl, ...rest } = data as ApiRantResponse;
         setResult(rest as RantResponse);
         setSubmittedText(text);
-        // Deliberately quiet for "serious" (self-harm/in-danger) — no
-        // theatrics there. A distinct hard-stop tone for "firm"
-        // (violent_threat) only. Everything else stays silent for now.
-        if (rest.pathway === "firm") playHardStopTone();
+        // Deliberately quiet for "serious" (self-harm/in-danger) and
+        // "hard_no" — no mascot, no theatrics there, per
+        // t-rant-technical-spec.md's visual design section. A hard-stop tone
+        // for "firm" (violent_threat), a "womp womp" for "witty" blocks.
+        if (rest.pathway === "firm") playSound(playHardStopTone);
+        if (rest.pathway === "witty") playSound(playWittyWomp);
       }
     } catch {
       setError("Request failed");
@@ -228,8 +294,8 @@ export default function Home() {
 
   return (
     <main style={{ maxWidth: 640, margin: "40px auto", padding: "0 16px", fontFamily: "sans-serif" }}>
-      <h1>T-Rant (core pipeline preview)</h1>
-      <p>Paste your heated draft below. Plain functional UI for now: visual design comes later.</p>
+      <h1>T-Rant</h1>
+      <p>Paste your heated draft below.</p>
       <p style={{ fontSize: 14 }}>
         <Link href="/house-rules">House Rules</Link>: how tones, flagging, and privacy work, plus a
         live classifier demo.
@@ -268,11 +334,14 @@ export default function Home() {
               {context.length} / {CONTEXT_MAX_CHARS}
             </span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
             <span>{text.length} / {MAX_CHARS}</span>
-            <button type="submit" disabled={loading || !text.trim()}>
-              {loading ? "Thinking..." : "Translate"}
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {loading && <PixelRex pose="idle" size={32} animate />}
+              <button type="submit" disabled={loading || !text.trim()}>
+                {loading ? "T-Rex is thinking..." : "Translate"}
+              </button>
+            </div>
           </div>
         </form>
       </BrandCard>
@@ -289,10 +358,10 @@ export default function Home() {
 
       {result &&
         (result.pathway === "serious" ? (
-          <ResultView result={result} originalText={submittedText} />
+          <ResultView result={result} originalText={submittedText} onToneClick={playTone} />
         ) : (
           <BrandCard>
-            <ResultView result={result} originalText={submittedText} />
+            <ResultView result={result} originalText={submittedText} onToneClick={playTone} />
           </BrandCard>
         ))}
       {result && result.pathway !== "serious" && <UnwindLinks />}
@@ -470,8 +539,18 @@ function EmergencyNumbersPicker() {
   );
 }
 
-function ResultView({ result, originalText }: { result: RantResponse; originalText: string }) {
+function ResultView({
+  result,
+  originalText,
+  onToneClick,
+}: {
+  result: RantResponse;
+  originalText: string;
+  onToneClick: (tone: ToneKey) => void;
+}) {
   switch (result.pathway) {
+    // No sprite, no sound: hard_no gets a flat, minimal refusal with no
+    // mascot theatrics of any kind, per t-rant-technical-spec.md.
     case "hard_no":
       return (
         <div>
@@ -535,7 +614,10 @@ function ResultView({ result, originalText }: { result: RantResponse; originalTe
     case "witty":
       return (
         <div>
-          <p>{result.message}</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <PixelRex pose="stop_sign" size={48} />
+            <p style={{ margin: 0 }}>{result.message}</p>
+          </div>
           <blockquote>
             <p style={{ fontStyle: "italic" }}>{result.quote.text}</p>
             {result.quote.author && <p>— {result.quote.author}</p>}
@@ -545,7 +627,7 @@ function ResultView({ result, originalText }: { result: RantResponse; originalTe
       );
 
     case "clean":
-      return <CleanResultView result={result} originalText={originalText} />;
+      return <CleanResultView result={result} originalText={originalText} onToneClick={onToneClick} />;
 
     default:
       return null;
@@ -555,9 +637,11 @@ function ResultView({ result, originalText }: { result: RantResponse; originalTe
 function CleanResultView({
   result,
   originalText,
+  onToneClick,
 }: {
   result: Extract<RantResponse, { pathway: "clean" }>;
   originalText: string;
+  onToneClick: (tone: ToneKey) => void;
 }) {
   const [persona, setPersona] = useState<Persona | null>(null);
   const [personaText, setPersonaText] = useState<string | null>(null);
@@ -608,11 +692,11 @@ function CleanResultView({
     <div>
       <IntensityGauge intensity={result.intensity} />
 
-      <h2>Still You, Just Cooler</h2>
+      <ToneHeading pose="raised_eyebrow" tone="still_you_just_cooler" label="Still You, Just Cooler" onClick={onToneClick} />
       <p>{result.versions.stillYouJustCooler}</p>
-      <h2>Professional & Clear</h2>
+      <ToneHeading pose="necktie" tone="professional_clear" label="Professional & Clear" onClick={onToneClick} />
       <p>{result.versions.professionalClear}</p>
-      <h2>Maximum Diplomacy</h2>
+      <ToneHeading pose="olive_branch" tone="maximum_diplomacy" label="Maximum Diplomacy" onClick={onToneClick} />
       <p>{result.versions.maximumDiplomacy}</p>
 
       <div style={{ marginTop: 20, fontSize: 14 }}>

@@ -156,8 +156,54 @@ function ToneHeading({ pose, label, tone, onClick }: { pose: RexPose; label: str
       }}
     >
       <PixelRex pose={pose} size={32} />
-      <h2 style={{ margin: 0 }}>{label}</h2>
+      <h2 style={{ margin: 0, fontFamily: "var(--font-pixel)", fontSize: 15, lineHeight: 1.5 }}>{label}</h2>
     </button>
+  );
+}
+
+// Pixelated prehistoric backdrop: a repeating fern band along the bottom
+// edge and one volcano, all code-generated (no image asset), kept faint so
+// it never fights foreground text for contrast. Deliberately not rendered
+// during the "serious" pathway — that state steps out of the pixel theme
+// entirely, per t-rant-technical-spec.md.
+function PrehistoricBackground() {
+  const fernColor = "#8fa88f";
+  const volcanoColor = "#a89a80";
+
+  return (
+    <svg
+      viewBox="0 0 400 300"
+      preserveAspectRatio="xMidYMax slice"
+      aria-hidden="true"
+      style={{
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        zIndex: -1,
+        opacity: 0.3,
+        pointerEvents: "none",
+      }}
+    >
+      <defs>
+        <pattern id="rex-ferns" width="34" height="40" patternUnits="userSpaceOnUse">
+          <rect x="15" y="24" width="4" height="16" fill={fernColor} />
+          <rect x="11" y="20" width="4" height="4" fill={fernColor} />
+          <rect x="7" y="16" width="4" height="4" fill={fernColor} />
+          <rect x="19" y="20" width="4" height="4" fill={fernColor} />
+          <rect x="23" y="16" width="4" height="4" fill={fernColor} />
+          <rect x="11" y="28" width="4" height="4" fill={fernColor} />
+          <rect x="19" y="28" width="4" height="4" fill={fernColor} />
+        </pattern>
+      </defs>
+      <rect x="0" y="230" width="400" height="70" fill="url(#rex-ferns)" />
+      {/* Volcano: stepped pixel triangle with a lava-orange peak. */}
+      <rect x="330" y="150" width="10" height="10" fill="#c0392b" />
+      <rect x="320" y="160" width="30" height="10" fill={volcanoColor} />
+      <rect x="310" y="170" width="50" height="10" fill={volcanoColor} />
+      <rect x="300" y="180" width="70" height="10" fill={volcanoColor} />
+      <rect x="290" y="190" width="90" height="10" fill={volcanoColor} />
+    </svg>
   );
 }
 
@@ -294,7 +340,8 @@ export default function Home() {
 
   return (
     <main style={{ maxWidth: 640, margin: "40px auto", padding: "0 16px", fontFamily: "sans-serif" }}>
-      <h1>T-Rant</h1>
+      {result?.pathway !== "serious" && <PrehistoricBackground />}
+      <h1 style={{ fontFamily: "var(--font-pixel)", fontSize: 28, lineHeight: 1.4 }}>T-Rant</h1>
       <p>Paste your heated draft below.</p>
       <p style={{ fontSize: 14 }}>
         <Link href="/house-rules">House Rules</Link>: how tones, flagging, and privacy work, plus a
@@ -376,23 +423,21 @@ export default function Home() {
 // crops it — top, bottom, or wherever they stop scrolling. Deliberately a
 // different color scheme from the calming palette (serious pathway) so
 // that state stays visually distinct and un-branded, per
-// t-rant-safety-legal-update.md section 1. This is a placeholder for the
-// real pixel-art identity, not a replacement for it — see README "The full
-// experience (planned)".
+// t-rant-safety-legal-update.md section 1.
 function BrandCard({ children }: { children: React.ReactNode }) {
   const bandStyle: React.CSSProperties = {
     padding: "6px 14px",
     background: "#2d2a24",
     color: "#f5f0e6",
-    fontSize: 13,
-    fontWeight: 700,
-    letterSpacing: 0.3,
+    fontSize: 11,
+    letterSpacing: 0.5,
+    fontFamily: "var(--font-pixel)",
   };
   return (
     <div style={{ border: "1px solid #ddd", borderRadius: 8, overflow: "hidden", margin: "16px 0" }}>
       <div style={bandStyle}>🦖 T-Rant</div>
       <div style={{ padding: 16 }}>{children}</div>
-      <div style={{ ...bandStyle, fontWeight: 400, fontSize: 12 }}>🦖 T-Rant · small arms, big feelings</div>
+      <div style={{ ...bandStyle, fontSize: 9 }}>🦖 T-Rant · small arms, big feelings</div>
     </div>
   );
 }

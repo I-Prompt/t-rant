@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -10,6 +10,16 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Retro blocky header font, per t-rant-technical-spec.md's visual design
+// section. Applied narrowly (brand mark, main heading, tone headings) via
+// var(--font-pixel) — Press Start 2P is unreadable at body-text sizes or in
+// long sentences, so it never touches paragraph copy.
+const pixelFont = Press_Start_2P({
+  variable: "--font-pixel",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 const SITE_DESCRIPTION =
@@ -32,7 +42,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${pixelFont.variable}`}>
       <body>{children}</body>
     </html>
   );

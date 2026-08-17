@@ -6,7 +6,7 @@ Paste a heated draft message - a Slack rant, an angry email - and get back three
 
 "Angry message → professional rewrite" tools already exist (Angry Email Translator, Anger Translator, AI Corporate Translator, among others). What's different here is two things: a guardrail architecture with dedicated, isolated safety classification, not three prompt variations bolted onto an unguarded text box, and a deliberate bet on **provable transparency** over "trust us": every block shows you exactly what tripped it, in your own words.
 
-A true pixel-art T-Rex identity, sound design beyond the category-aware tones, and a handful of bonus features are still ahead (see [The full experience](#the-full-experience-planned) below) - everything else described here, including the self-harm calming redesign, unwind links, and screenshot branding, is built and working today.
+A handful of bonus features and independent verification of a couple of content sources are still ahead (see [The full experience](#the-full-experience-planned) below) - everything else described here, including the pixel-art T-Rex identity, the self-harm calming redesign, unwind links, and screenshot branding, is built and working today.
 
 ## Architecture
 
@@ -78,9 +78,19 @@ Deliberately **not** translated: House Rules, site chrome, `/status`, `/dark-pat
 
 - **Share on X**: opens a pre-filled tweet via `twitter.com/intent/tweet`, no OAuth, no API key. The app never touches your account.
 - **Copy shareable link**: encodes only the *rewritten output* (never your original draft) into the URL. No backend storage.
-- **Auto-generated Open Graph image**: code-generated at request time ([`opengraph-image.tsx`](app/src/app/opengraph-image.tsx)), so shared links get a real preview card even before the pixel-art identity exists.
+- **Auto-generated Open Graph image**: code-generated at request time ([`opengraph-image.tsx`](app/src/app/opengraph-image.tsx)), so shared links get a real preview card.
 - **Bookmarklet**: highlight text anywhere in your browser, click the bookmark, land on T-Rant with it pre-filled. See [`/bookmarklet`](app/src/app/bookmarklet/page.tsx).
-- **Screenshot branding**: the input box and every non-serious result render inside a bordered card with a "🦖 T-Rant" band at both the top and bottom, so a manual screenshot carries the mark no matter where someone crops it. A placeholder for the real pixel-art identity, not a substitute for it.
+- **Screenshot branding**: the input box and every non-serious result render inside a bordered card with a "🦖 T-Rant" band at both the top and bottom, so a manual screenshot carries the mark no matter where someone crops it.
+
+## Visual & sound identity
+
+Built around "small arms, big feelings": code-generated pixel art, no external image assets anywhere in this section.
+
+- **Pixel T-Rex sprite** ([`lib/rexSprite.ts`](app/src/lib/rexSprite.ts)): one shared 18x14 silhouette (small arm included - that's the whole joke) with a distinct pose per tone/pathway - raised eyebrow for Still You Just Cooler, a necktie for Professional & Clear, an olive branch for Maximum Diplomacy, a stomping animation while a request is in flight, a stop sign plus a small meteor for witty-pathway blocks. Deliberately **no sprite at all** for Hard NO or the serious (self-harm/in-danger) pathway - those stay unbranded on purpose, per the guardrail design.
+- **Square-wave sound effects** ([`lib/sounds.ts`](app/src/lib/sounds.ts)): oscillator-generated, not licensed audio files. A stomp on submit, a distinct click-triggered blip per tone (click a tone heading to hear it), the hard-stop tone for firm blocks, a "womp womp" for witty blocks. Silent by design for hard_no and the serious pathway.
+- **Pixel favicon** ([`icon.tsx`](app/src/app/icon.tsx)): the same sprite geometry, server-rendered, so it can't drift from the in-app sprite.
+- **Retro pixel font**: applied narrowly - the brand mark and short headers only, never body text or the House Rules Q&A sentences, since it's unreadable at that length.
+- **Pixelated prehistoric background**: a faint fern band and a volcano behind the main page, hidden during the serious pathway so that state still visually steps out of the pixel theme entirely.
 
 ## Extras
 
@@ -93,9 +103,7 @@ Deliberately **not** translated: House Rules, site chrome, `/status`, `/dark-pat
 
 ## The full experience (planned)
 
-The pipeline, safety architecture, transparency features, multilingual support, and sharing described above are all built and working. The rest of the intended experience is still ahead:
-
-**Visual and sensory identity.** A pixel-art T-Rex mascot built around "small arms, big feelings": a distinct sprite state per tone and pathway (raised-eyebrow for Still You Just Cooler, a tiny necktie for Professional & Clear, an olive branch for Maximum Diplomacy, a stomping idle/loading animation, a stop-sign hold for witty-pathway blocks), deliberately *no* sprite or mascot treatment at all for Hard NO or the serious pathway. Web Audio square-wave click sound effects per tone, generated with oscillator nodes rather than licensed audio files, on top of the category-aware tones already in place for the firm and serious pathways. A pixelated prehistoric background, a retro pixel font, and a pixel T-Rex favicon. The screenshot-branded cards described under Sharing are a functional stand-in for now, not the real thing: actual pixel art needs either a generated image asset or a human-supplied one, neither of which exists yet.
+The pipeline, safety architecture, transparency features, multilingual support, sharing, and visual/sound identity described above are all built and working. The rest of the intended experience is still ahead:
 
 **Geo-routing.** Explicitly decided against: IP-based geolocation was ruled out in favor of the user-picked region/country dropdown described under Extras, which is now wired into the self-harm/in-danger pathway as a secondary option next to `findahelpline.com` (the emergency-numbers dropdown covers general emergency services, not crisis lines specifically). What's still pending is independently verifying each entry, currently drafted from general knowledge.
 
@@ -105,9 +113,9 @@ The pipeline, safety architecture, transparency features, multilingual support, 
 
 ## Status
 
-**Shipped:** core two-stage pipeline, all five pathways, transparency features (including a Q&A-format House Rules page), House Rules with a live classifier sandbox, multilingual classification/generation/self-harm-content/quotes, Rant Intensity Score, five personas, rage thermometer, category-aware sound, sharing (X intent, output-only permalinks, OG image, screenshot branding), self-harm calming visual redesign, unwind links, emergency-numbers reference tool wired into the self-harm/in-danger pathway with per-country secondary helplines, optional dialogue-context field, `/status`, `/dark-patterns`, bookmarklet, rate limiting, no-raw-text logging, content-editing (not just tone-softening) for the Professional & Clear and Maximum Diplomacy tiers.
+**Shipped:** core two-stage pipeline, all five pathways, transparency features (including a Q&A-format House Rules page), House Rules with a live classifier sandbox, multilingual classification/generation/self-harm-content/quotes, Rant Intensity Score, five personas, rage thermometer, pixel-art T-Rex visual identity with per-pose sprites/sound/favicon/pixel font/background, sharing (X intent, output-only permalinks, OG image, screenshot branding), self-harm calming visual redesign, unwind links, emergency-numbers reference tool wired into the self-harm/in-danger pathway with per-country secondary helplines, optional dialogue-context field, `/status`, `/dark-patterns`, bookmarklet, rate limiting, no-raw-text logging, content-editing (not just tone-softening) for the Professional & Clear and Maximum Diplomacy tiers.
 
-**Planned:** the real pixel-art visual identity and remaining sound design, independently verifying the emergency-numbers entries (currently drafted from general knowledge), a native-speaker review pass on the non-English self-harm/quote translations, the two remaining bonus features under consideration (Director's Cut, diff-style explanations), and deploying to Vercel.
+**Planned:** independently verifying the emergency-numbers entries (currently drafted from general knowledge), a native-speaker review pass on the non-English self-harm/quote translations, the two remaining bonus features under consideration (Director's Cut, diff-style explanations), and deploying to Vercel.
 
 Full spec: [`t-rant-MASTER-BUILD-BRIEF.md`](t-rant-MASTER-BUILD-BRIEF.md), [`t-rant-technical-spec.md`](t-rant-technical-spec.md), [`t-rant-safety-legal-update.md`](t-rant-safety-legal-update.md), [`t-rant-quotes-by-category.md`](t-rant-quotes-by-category.md), [`t-rant-phase2-brief.md`](t-rant-phase2-brief.md).
 

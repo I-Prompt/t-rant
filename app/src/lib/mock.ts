@@ -186,11 +186,17 @@ function maximumDiplomacyMock(text: string): string {
   return `I hope this finds you well - I wanted to gently mention: ${body}`;
 }
 
-export function mockGenerateToneVersions(text: string): ToneVersions {
+// Context is accepted for signature parity with generator.ts's real
+// implementation (see t-rant-phase2-brief.md section 8) but not woven into
+// the rewrite here: the mock is regex substitution, not comprehension, so
+// there's no meaningful way for it to "respond to their point." A trailing
+// note is enough to prove the value reaches this far in the pipeline.
+export function mockGenerateToneVersions(text: string, context?: string): ToneVersions {
+  const contextNote = context?.trim() ? ` [context noted: "${context.trim()}"]` : "";
   return {
-    stillYouJustCooler: stillYouJustCoolerMock(text),
-    professionalClear: professionalClearMock(text),
-    maximumDiplomacy: maximumDiplomacyMock(text),
+    stillYouJustCooler: stillYouJustCoolerMock(text) + contextNote,
+    professionalClear: professionalClearMock(text) + contextNote,
+    maximumDiplomacy: maximumDiplomacyMock(text) + contextNote,
   };
 }
 

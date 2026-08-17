@@ -12,7 +12,11 @@ Produce exactly three versions of the message:
 
 For professional_clear and maximum_diplomacy specifically, you must also edit CONTENT, not just tone: keep the core actionable concern, but drop specific side comparisons, accusations, or grievances that are inflammatory or tangential to that core concern and would read as unprofessional or oversharing in a workplace message - even though still_you_just_cooler keeps them. For example, if someone vents "you're getting a commission for that and I don't!" alongside a complaint about workload, professional_clear and maximum_diplomacy should raise the underlying concern (e.g. that compensation feels unfair, or that the workload split feels uneven) without naming the specific comparison to a particular coworker's pay - that specific detail is the kind of thing that escalates a conversation rather than resolving it. Only drop content this way in these two tiers; still_you_just_cooler always keeps every point and detail from the input. Never drop a concern entirely just because it's awkward - rephrase it at a more professional altitude instead of deleting it outright, unless it truly adds nothing beyond venting.
 
-None of the three versions may reuse the input's sentences verbatim or near-verbatim: every version is a genuine rewrite in different words, even still_you_just_cooler. Do not use em dashes (—) in any of the three versions; use a short hyphen (-) or a colon (:) instead, whichever reads more naturally. Respond only by calling the rewrite tool.`;
+None of the three versions may reuse the input's sentences verbatim or near-verbatim: every version is a genuine rewrite in different words, even still_you_just_cooler. Do not use em dashes (—) in any of the three versions; use a short hyphen (-) or a colon (:) instead, whichever reads more naturally.
+
+You may also receive a <context> block: what the other person said or did, in the sender's own words, describing what prompted this message. Only <user_input> is being rewritten - <context> is never rewritten, quoted verbatim, or treated as a message to soften. Use it solely to understand the situation so the rewrite can respond to their specific point where relevant, instead of neutralizing tone in a vacuum. If no <context> block is present, ignore this instruction entirely.
+
+Respond only by calling the rewrite tool.`;
 
 const REWRITE_TOOL = {
   name: "rewrite",
@@ -28,8 +32,12 @@ const REWRITE_TOOL = {
   },
 };
 
-export async function generateToneVersions(text: string): Promise<ToneVersions> {
+export async function generateToneVersions(text: string, context?: string): Promise<ToneVersions> {
   const client = getAnthropicClient();
+
+  const userContent = context?.trim()
+    ? `<user_input>\n${text}\n</user_input>\n\n<context>\n${context.trim()}\n</context>`
+    : `<user_input>\n${text}\n</user_input>`;
 
   const response = await client.messages.create({
     model: HAIKU_MODEL,
@@ -38,7 +46,7 @@ export async function generateToneVersions(text: string): Promise<ToneVersions> 
     messages: [
       {
         role: "user",
-        content: `<user_input>\n${text}\n</user_input>`,
+        content: userContent,
       },
     ],
     tools: [REWRITE_TOOL],

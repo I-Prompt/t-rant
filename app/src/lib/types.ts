@@ -89,8 +89,15 @@ export type RantResponse =
 
 export type ApiRantResponse = RantResponse & { rateLimit: RateLimitInfo };
 
+export const CONTEXT_MAX_CHARS = 500;
+
 export interface RantRequestBody {
   text: string;
+  // Optional: what the other person said or did, in the sender's own words.
+  // Lets the rewrite respond to their specific point instead of just
+  // neutralizing tone in a vacuum. See t-rant-phase2-brief.md section 8
+  // ("Optional dialogue-context field").
+  context?: string;
 }
 
 // House Rules "live classifier demo" — classification only, no rewrite

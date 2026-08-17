@@ -5,7 +5,7 @@ import { mockClassify, mockGenerateToneVersions } from "@/lib/mock";
 import { pickQuote, WittyTrigger } from "@/lib/quotes";
 import { checkRateLimit, MAX_REQUESTS_PER_WINDOW } from "@/lib/rateLimit";
 import { SELF_HARM_CONTENT, SERIOUS_RESOURCE_URL } from "@/lib/selfHarmContent";
-import { FlaggedInfo, RantRequestBody, RantResponse } from "@/lib/types";
+import { CONTEXT_MAX_CHARS, FlaggedInfo, RantRequestBody, RantResponse } from "@/lib/types";
 
 const MOCK_MODE = process.env.MOCK_MODE === "true";
 
@@ -54,11 +54,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Text exceeds ${MAX_CHARS} character limit` }, { status: 400 });
   }
 
+  const context = body.context?.trim() || undefined;
+  if (context && context.length > CONTEXT_MAX_CHARS) {
+    return NextResponse.json(
+      { error: `Context exceeds ${CONTEXT_MAX_CHARS} character limit` },
+      { status: 400 }
+    );
+  }
+
+  // Classify the context alongside the main text, clearly labeled, so
+  // nothing typed into the optional context field bypasses the safety
+  // classifier — it's still user-supplied text going into a model prompt.
+  const classificationInput = context
+    ? `${text}\n\n[Context - what they said or did]: ${context}`
+    : text;
+
   let label, flaggedPhrases, reason, language, intensity;
   try {
     ({ label, flaggedPhrases, reason, language, intensity } = MOCK_MODE
-      ? mockClassify(text)
-      : await classify(text));
+      ? mockClassify(classificationInput)
+      : await classify(classificationInput));
   } catch (err) {
     console.error("Classifier error:", err);
     return NextResponse.json({ error: "Classification failed" }, { status: 502 });
@@ -67,7 +82,7 @@ export async function POST(req: NextRequest) {
   // Never log raw rant text — only the category and a timestamp.
   console.log(JSON.stringify({ category: label, timestamp: new Date().toISOString() }));
 
-  const flagged: FlaggedInfo = { originalText: text, flaggedPhrases, reason };
+  const flagged: FlaggedInfo = { originalText: classificationInput, flaggedPhrases, reason };
 
   let responseBody: RantResponse;
 
@@ -122,7 +137,9 @@ export async function POST(req: NextRequest) {
     case "clean":
     default: {
       try {
-        const versions = MOCK_MODE ? mockGenerateToneVersions(text) : await generateToneVersions(text);
+        const versions = MOCK_MODE
+          ? mockGenerateToneVersions(text, context)
+          : await generateToneVersions(text, context);
         responseBody = { pathway: "clean", versions, intensity };
       } catch (err) {
         console.error("Generator error:", err);

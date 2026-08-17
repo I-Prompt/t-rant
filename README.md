@@ -84,6 +84,7 @@ Deliberately **not** translated: House Rules, site chrome, `/status`, `/dark-pat
 
 ## Extras
 
+- **Optional dialogue-context field**: a small "What did they say or do? (optional)" box below the main textarea, so a rewrite can respond to the other side's specific point instead of just neutralizing tone in a vacuum. Whatever's typed there is classified right alongside the main message (clearly labeled, not silently appended) before anything gets generated, so it can't be used to smuggle disallowed content past the guardrail just because it's in a second box.
 - **Rant Intensity Score**: 1-10 rating of how heated the input reads, returned by the classifier alongside its label.
 - **Rage thermometer**: a client-side-only heuristic meter that fills as you type, before you even submit (no API call).
 - **[Unwind links](app/src/app/page.tsx)**: a curated set of links (Tetris, explore.org, r/aww, The Useless Web, 2048) shown after any response except the serious pathway, for stepping away instead of continuing to engage.
@@ -101,13 +102,12 @@ The pipeline, safety architecture, transparency features, multilingual support, 
 **Bonus features under consideration:**
 - **Director's Cut**: a fourth, clearly labeled "for your eyes only, do not send" version, maximally unfiltered.
 - **Diff-style explanations**: a short annotation per version explaining what changed and why.
-- **Optional dialogue-context field**: "what did they say or do?", so a rewrite can respond to the other side's point instead of just neutralizing tone in a vacuum.
 
 ## Status
 
-**Shipped:** core two-stage pipeline, all five pathways, transparency features, House Rules with a live classifier sandbox, multilingual classification/generation/self-harm-content/quotes, Rant Intensity Score, five personas, rage thermometer, category-aware sound, sharing (X intent, output-only permalinks, OG image, screenshot branding), self-harm calming visual redesign, unwind links, emergency-numbers reference tool wired into the self-harm/in-danger pathway with per-country secondary helplines, `/status`, `/dark-patterns`, bookmarklet, rate limiting, no-raw-text logging, content-editing (not just tone-softening) for the Professional & Clear and Maximum Diplomacy tiers.
+**Shipped:** core two-stage pipeline, all five pathways, transparency features (including a Q&A-format House Rules page), House Rules with a live classifier sandbox, multilingual classification/generation/self-harm-content/quotes, Rant Intensity Score, five personas, rage thermometer, category-aware sound, sharing (X intent, output-only permalinks, OG image, screenshot branding), self-harm calming visual redesign, unwind links, emergency-numbers reference tool wired into the self-harm/in-danger pathway with per-country secondary helplines, optional dialogue-context field, `/status`, `/dark-patterns`, bookmarklet, rate limiting, no-raw-text logging, content-editing (not just tone-softening) for the Professional & Clear and Maximum Diplomacy tiers.
 
-**Planned:** the real pixel-art visual identity and remaining sound design, independently verifying the emergency-numbers entries (currently drafted from general knowledge), a native-speaker review pass on the non-English self-harm/quote translations, the three bonus features under consideration (Director's Cut, diff-style explanations, dialogue-context field), and deploying to Vercel.
+**Planned:** the real pixel-art visual identity and remaining sound design, independently verifying the emergency-numbers entries (currently drafted from general knowledge), a native-speaker review pass on the non-English self-harm/quote translations, the two remaining bonus features under consideration (Director's Cut, diff-style explanations), and deploying to Vercel.
 
 Full spec: [`t-rant-MASTER-BUILD-BRIEF.md`](t-rant-MASTER-BUILD-BRIEF.md), [`t-rant-technical-spec.md`](t-rant-technical-spec.md), [`t-rant-safety-legal-update.md`](t-rant-safety-legal-update.md), [`t-rant-quotes-by-category.md`](t-rant-quotes-by-category.md), [`t-rant-phase2-brief.md`](t-rant-phase2-brief.md).
 

@@ -6,6 +6,7 @@ import { EMERGENCY_NUMBERS } from "@/lib/emergencyNumbers";
 import { SELF_HARM_CONTENT, SERIOUS_RESOURCE_URL } from "@/lib/selfHarmContent";
 import {
   ApiRantResponse,
+  CONTEXT_MAX_CHARS,
   FlaggedInfo,
   HelpfulThing,
   Persona,
@@ -96,6 +97,7 @@ const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "Ar
 
 export default function Home() {
   const [text, setText] = useState("");
+  const [context, setContext] = useState("");
   const [submittedText, setSubmittedText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -179,7 +181,7 @@ export default function Home() {
       const res = await fetch("/api/rant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, context: context.trim() || undefined }),
       });
       const data = await res.json();
       if (data.rateLimit) {
@@ -250,6 +252,22 @@ export default function Home() {
             placeholder="What's got you fired up?"
           />
           <RageThermometer text={text} />
+          <div style={{ marginTop: 10 }}>
+            <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4 }}>
+              What did they say or do? <span style={{ color: "#999" }}>(optional)</span>
+            </label>
+            <textarea
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
+              maxLength={CONTEXT_MAX_CHARS}
+              rows={2}
+              style={{ width: "100%", fontSize: 14, padding: 8 }}
+              placeholder="Give the rewrite something to respond to, in their words - not required."
+            />
+            <span style={{ fontSize: 12, color: "#999" }}>
+              {context.length} / {CONTEXT_MAX_CHARS}
+            </span>
+          </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
             <span>{text.length} / {MAX_CHARS}</span>
             <button type="submit" disabled={loading || !text.trim()}>

@@ -18,11 +18,9 @@ export default function EmergencyNumbers() {
       </p>
       <h1>Emergency Numbers (reference)</h1>
 
-      <div style={{ padding: 12, border: "1px solid #e0c060", borderRadius: 6, background: "#fff8e1", fontSize: 14 }}>
-        {EMERGENCY_NUMBERS_STATUS.reason} Numbers here were drafted from general knowledge, not looked
-        up live: check the "last verified" note before relying on one. If you're in crisis right now,
-        findahelpline.com (shown on the main page, and above this picker there too) is the actively
-        maintained path.
+      <div style={{ padding: 12, border: "1px solid #b9c9b0", borderRadius: 6, background: "#eef3ee", fontSize: 14 }}>
+        {EMERGENCY_NUMBERS_STATUS.reason} If you're in crisis right now, findahelpline.com (shown on
+        the main page, and above this picker there too) is the actively maintained path.
       </div>
 
       <div style={{ marginTop: 20 }}>

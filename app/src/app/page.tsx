@@ -506,10 +506,11 @@ function HelpNowBar({ onHelp }: { onHelp: (kind: "self_harm" | "in_danger") => v
 // Region -> country -> general emergency number picker, embedded directly in
 // the self-harm/in-danger result. findahelpline.com (above) stays the
 // primary, actively-maintained pointer; this is a secondary option for
-// someone who needs a local emergency line right now. Numbers are drafted
-// from general knowledge, not independently verified (see
-// src/lib/emergencyNumbers.ts), so that caveat stays visible here too rather
-// than implying more authority than the data actually has.
+// someone who needs a local emergency line right now. Every entry was
+// cross-checked against a stable source as of the date shown (see
+// src/lib/emergencyNumbers.ts) - any future entry added without a
+// verification pass carries its own "not yet independently verified" note
+// instead, per that file's `lastVerified` convention.
 function EmergencyNumbersPicker() {
   const [regionIndex, setRegionIndex] = useState<number | null>(null);
   const [countryIndex, setCountryIndex] = useState<number | null>(null);
@@ -529,8 +530,8 @@ function EmergencyNumbersPicker() {
     >
       <p style={{ margin: "0 0 4px", fontWeight: 600, color: "#3f473f" }}>Local emergency number</p>
       <p style={{ margin: "0 0 10px", fontSize: 13, color: "#7a7259" }}>
-        Drafted from general knowledge, not independently verified: if you're unsure, the link above
-        is the actively maintained option.
+        findahelpline.com (the link above) stays the primary, actively maintained option; this is a
+        secondary reference.
       </p>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <select
@@ -578,6 +579,9 @@ function EmergencyNumbersPicker() {
               ))}
             </ul>
           )}
+          <p style={{ margin: "6px 0 0", fontSize: 11, color: entry.lastVerified ? "#6b8f71" : "#b06a00" }}>
+            {entry.lastVerified ? `Last verified: ${entry.lastVerified}` : "Not yet independently verified"}
+          </p>
         </div>
       )}
     </div>

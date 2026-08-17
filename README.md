@@ -73,8 +73,8 @@ Supported: **English, German, Spanish, Italian, French, Swedish, Russian.** The 
 
 - The 3 tone rewrites and persona rewrites: generated live, in the detected language.
 - The classifier's flagged-phrase reasoning: generated live, in the detected language.
-- The self-harm/in-danger support text: **static, pre-translated per language** (not live-generated), since getting a crisis message's wording slightly wrong matters more than getting a rewrite's wording slightly wrong. Translated by Claude; a native-speaker review pass is still recommended before this goes fully live.
-- The witty-pathway quotes: a separate, smaller **20-quote curated set per non-English language** (not a machine translation of the English 86), preferring standard/canonical translations for scripture and classical citations over fresh retranslation.
+- The self-harm/in-danger support text: **static, pre-translated per language** (not live-generated), since getting a crisis message's wording slightly wrong matters more than getting a rewrite's wording slightly wrong. Translated by Claude. A 2026-08-17 Claude review pass checked every translation for grammar, naturalness, and safe-messaging conventions (no "committed suicide"-style phrasing, no methods/means, no minimizing, always paired with a real resource link) and found no issues - confidence is high for German/Spanish/Italian/French, moderate for Swedish/Russian. A human native-speaker pass is still recommended before this is treated as fully signed off, especially for Swedish/Russian: an AI reviewing its own prior output isn't a substitute for that.
+- The witty-pathway quotes: a separate, smaller **20-quote curated set per non-English language** (not a machine translation of the English 86), preferring standard/canonical translations for scripture and classical citations over fresh retranslation. The same 2026-08-17 review pass spot-checked citations against known canonical wording and attributions and found no issues; same native-speaker caveat applies.
 
 Deliberately **not** translated: House Rules, site chrome, `/status`, `/dark-patterns`, this README. The tool's actual output meets you in your language; the scaffolding around it doesn't need to yet.
 
@@ -117,7 +117,7 @@ The pipeline, safety architecture, transparency features, multilingual support, 
 
 **Shipped:** core two-stage pipeline, all five pathways, transparency features (including a Q&A-format House Rules page), House Rules with a live classifier sandbox, multilingual classification/generation/self-harm-content/quotes, Rant Intensity Score, five personas, rage thermometer, pixel-art T-Rex visual identity with per-pose sprites/sound/favicon/pixel font/background, sharing (X intent, output-only permalinks, OG image, screenshot branding), self-harm calming visual redesign, unwind links, emergency-numbers reference tool wired into the self-harm/in-danger pathway with per-country secondary helplines and all 35 entries independently verified, optional dialogue-context field, Director's Cut, diff-style explanations, `/status`, `/dark-patterns`, bookmarklet, rate limiting, no-raw-text logging, content-editing (not just tone-softening) for the Professional & Clear and Maximum Diplomacy tiers.
 
-**Planned:** a native-speaker review pass on the non-English self-harm/quote translations, and deploying to Vercel.
+**Planned:** a *human* native-speaker review pass on the non-English self-harm/quote translations (a Claude review pass on 2026-08-17 found no issues, but isn't a substitute for one - see "Multilingual support" above), and deploying to Vercel.
 
 Full spec: [`t-rant-MASTER-BUILD-BRIEF.md`](t-rant-MASTER-BUILD-BRIEF.md), [`t-rant-technical-spec.md`](t-rant-technical-spec.md), [`t-rant-safety-legal-update.md`](t-rant-safety-legal-update.md), [`t-rant-quotes-by-category.md`](t-rant-quotes-by-category.md), [`t-rant-phase2-brief.md`](t-rant-phase2-brief.md).
 

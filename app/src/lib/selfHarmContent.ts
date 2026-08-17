@@ -2,10 +2,17 @@ import { HelpfulThing, SupportedLanguage } from "./types";
 
 // Self-harm pathway copy, per language. English is the canonical version,
 // written by the project's creator. The other 6 are translations drafted by
-// Claude: a solid starting point, but given how much wording matters for
-// content like this, a native-speaker review pass before this goes live is
-// still recommended, same as originally planned in t-rant-phase2-brief.md
-// section 3/4.
+// Claude.
+//
+// 2026-08-17: a full Claude review pass checked every translation for
+// grammar, naturalness, and the safe-messaging conventions (no "committed
+// suicide"-style phrasing, no methods/means, no minimizing, always paired
+// with a real resource link, explicit "not a crisis service" line) — no
+// issues found. Confidence is high for de/es/it/fr, moderate for sv/ru. A
+// human native-speaker pass — especially for sv/ru — is still recommended
+// before this is treated as fully signed off, same as originally planned in
+// t-rant-phase2-brief.md section 3/4: an AI reviewing its own prior output
+// isn't a substitute for that, however careful the pass.
 //
 // The T-R-A-N-T acrostic (leading letters of the 5 non-optional
 // "helpful things") only works in English by design, so only the "en"

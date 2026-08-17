@@ -7,9 +7,16 @@ import { SupportedLanguage } from "./types";
 // classical citations, translated toward the standard/well-known wording in
 // each language (e.g. Luther Bible for German, Segond for French, Synodal
 // for Russian) rather than a fresh literal translation, per the "check for
-// an official adaptation first" plan. These are Claude's drafts — worth a
-// native-speaker/citation check before shipping, same caveat as the
-// self-harm content in ./selfHarmContent.ts.
+// an official adaptation first" plan. These are Claude's drafts.
+//
+// 2026-08-17: a full Claude review pass spot-checked the scripture/classical
+// citations against known canonical wording (e.g. the French Matthew 5:44
+// line matches Segond exactly, the Russian matches the Synodal translation)
+// and checked attributions (e.g. "Trust, but verify" is credited as a
+// Russian proverb only in the Russian set, since that's its actual origin —
+// Reagan popularized it in English but didn't coin it) — no issues found.
+// Same caveat as ./selfHarmContent.ts: worth a native-speaker/citation check
+// before shipping, an AI review pass isn't a substitute for that.
 
 export interface LocalizedQuoteSet {
   hate_speech: Quote[];

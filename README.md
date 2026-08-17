@@ -39,6 +39,10 @@ We don't claim this is unhackable anywhere: the defensible claim is the layered 
 2. **Professional & Clear**: standard workplace-diplomatic tone, direct but appropriate for a manager or client. Also edits content, not just tone: drops specific side comparisons or accusations that read as inflammatory or oversharing (e.g. "you're getting a commission and I don't") while keeping the underlying concern.
 3. **Maximum Diplomacy**: heavily softened, hedge-heavy, prioritizes preserving the relationship over directness. Same content-editing as Professional & Clear, plus more hedging.
 
+Each of the three tiers comes with a **one-sentence explanation** of what changed and why (e.g. "Removed the swearing and the pay comparison; kept the deadline concern front and center") - generated alongside the rewrite itself, not a separate pass.
+
+There's also a fourth version, **Director's Cut**: the rawest, most emotionally honest take, explicitly for the sender's own eyes only - never meant to be sent. It can be blunt and use mild profanity (catharsis, not communication) but still can't cross into slurs, name-calling, threats, or genuine cruelty toward the other person. Hidden behind a click by default, and structurally excluded from the shareable-link payload (a separate field from the other three versions, not a fourth key alongside them) so it can never end up copied or shared by accident.
+
 Plus five optional **persona rewrites** for fun/sharing, generated on top of an already-clean message: Corporate Memo, Victorian Letter, Cease & Desist, Haiku, Nature Documentary.
 
 ## Transparency & trust
@@ -105,17 +109,15 @@ Built around "small arms, big feelings": code-generated pixel art, no external i
 
 The pipeline, safety architecture, transparency features, multilingual support, sharing, and visual/sound identity described above are all built and working. The rest of the intended experience is still ahead:
 
-**Geo-routing.** Explicitly decided against: IP-based geolocation was ruled out in favor of the user-picked region/country dropdown described under Extras, which is now wired into the self-harm/in-danger pathway as a secondary option next to `findahelpline.com` (the emergency-numbers dropdown covers general emergency services, not crisis lines specifically). What's still pending is independently verifying each entry, currently drafted from general knowledge.
+**Geo-routing.** Explicitly decided against: IP-based geolocation was ruled out in favor of the user-picked region/country dropdown described under Extras, which is wired into the self-harm/in-danger pathway as a secondary option next to `findahelpline.com` (the emergency-numbers dropdown covers general emergency services, not crisis lines specifically). All 35 entries are independently verified as of 2026-08-17.
 
-**Bonus features under consideration:**
-- **Director's Cut**: a fourth, clearly labeled "for your eyes only, do not send" version, maximally unfiltered.
-- **Diff-style explanations**: a short annotation per version explaining what changed and why.
+**Bonus features:** Director's Cut and diff-style explanations (see "The three tiers" above) are both built. None currently under consideration.
 
 ## Status
 
-**Shipped:** core two-stage pipeline, all five pathways, transparency features (including a Q&A-format House Rules page), House Rules with a live classifier sandbox, multilingual classification/generation/self-harm-content/quotes, Rant Intensity Score, five personas, rage thermometer, pixel-art T-Rex visual identity with per-pose sprites/sound/favicon/pixel font/background, sharing (X intent, output-only permalinks, OG image, screenshot branding), self-harm calming visual redesign, unwind links, emergency-numbers reference tool wired into the self-harm/in-danger pathway with per-country secondary helplines and all 35 entries independently verified, optional dialogue-context field, `/status`, `/dark-patterns`, bookmarklet, rate limiting, no-raw-text logging, content-editing (not just tone-softening) for the Professional & Clear and Maximum Diplomacy tiers.
+**Shipped:** core two-stage pipeline, all five pathways, transparency features (including a Q&A-format House Rules page), House Rules with a live classifier sandbox, multilingual classification/generation/self-harm-content/quotes, Rant Intensity Score, five personas, rage thermometer, pixel-art T-Rex visual identity with per-pose sprites/sound/favicon/pixel font/background, sharing (X intent, output-only permalinks, OG image, screenshot branding), self-harm calming visual redesign, unwind links, emergency-numbers reference tool wired into the self-harm/in-danger pathway with per-country secondary helplines and all 35 entries independently verified, optional dialogue-context field, Director's Cut, diff-style explanations, `/status`, `/dark-patterns`, bookmarklet, rate limiting, no-raw-text logging, content-editing (not just tone-softening) for the Professional & Clear and Maximum Diplomacy tiers.
 
-**Planned:** a native-speaker review pass on the non-English self-harm/quote translations, the two remaining bonus features under consideration (Director's Cut, diff-style explanations), and deploying to Vercel.
+**Planned:** a native-speaker review pass on the non-English self-harm/quote translations, and deploying to Vercel.
 
 Full spec: [`t-rant-MASTER-BUILD-BRIEF.md`](t-rant-MASTER-BUILD-BRIEF.md), [`t-rant-technical-spec.md`](t-rant-technical-spec.md), [`t-rant-safety-legal-update.md`](t-rant-safety-legal-update.md), [`t-rant-quotes-by-category.md`](t-rant-quotes-by-category.md), [`t-rant-phase2-brief.md`](t-rant-phase2-brief.md).
 

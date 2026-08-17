@@ -743,10 +743,15 @@ function CleanResultView({
 
       <ToneHeading pose="raised_eyebrow" tone="still_you_just_cooler" label="Still You, Just Cooler" onClick={onToneClick} />
       <p>{result.versions.stillYouJustCooler}</p>
+      <ExplanationCaption text={result.explanations.stillYouJustCooler} />
       <ToneHeading pose="necktie" tone="professional_clear" label="Professional & Clear" onClick={onToneClick} />
       <p>{result.versions.professionalClear}</p>
+      <ExplanationCaption text={result.explanations.professionalClear} />
       <ToneHeading pose="olive_branch" tone="maximum_diplomacy" label="Maximum Diplomacy" onClick={onToneClick} />
       <p>{result.versions.maximumDiplomacy}</p>
+      <ExplanationCaption text={result.explanations.maximumDiplomacy} />
+
+      <DirectorsCut text={result.directorsCut} />
 
       <div style={{ marginTop: 20, fontSize: 14 }}>
         <p style={{ marginBottom: 6, color: "#555" }}>Try a persona (just for fun):</p>
@@ -781,6 +786,45 @@ function CleanResultView({
           Only the rewritten output goes in the link, never your original draft.
         </p>
       </div>
+    </div>
+  );
+}
+
+// "What changed and why" per tone tier - diff-style-explanations bonus
+// feature, see t-rant-phase2-brief.md section 8.
+function ExplanationCaption({ text }: { text: string }) {
+  if (!text) return null;
+  return <p style={{ margin: "-8px 0 12px", fontSize: 12.5, color: "#888", fontStyle: "italic" }}>{text}</p>;
+}
+
+// Director's Cut - a fourth, maximally-unfiltered version, explicitly for
+// the sender's own eyes only. Deliberately hidden behind a click (not shown
+// alongside the other three) and carries no share/persona/copy actions of
+// its own, so nothing here can end up sent anywhere by accident. See
+// t-rant-phase2-brief.md section 8.
+function DirectorsCut({ text }: { text: string }) {
+  const [revealed, setRevealed] = useState(false);
+
+  if (!text) return null;
+
+  return (
+    <div style={{ marginTop: 24, padding: 12, border: "1px dashed #aaa", borderRadius: 6 }}>
+      {!revealed ? (
+        <button
+          type="button"
+          onClick={() => setRevealed(true)}
+          style={{ all: "unset", cursor: "pointer", fontSize: 13, color: "#888", textDecoration: "underline" }}
+        >
+          🔒 Show Director&apos;s Cut - for your eyes only, don&apos;t send this
+        </button>
+      ) : (
+        <div>
+          <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 600, color: "#b06a00" }}>
+            Director&apos;s Cut - maximally unfiltered. For your eyes only. Do not send.
+          </p>
+          <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{text}</p>
+        </div>
+      )}
     </div>
   );
 }

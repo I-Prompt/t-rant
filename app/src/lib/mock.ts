@@ -5,7 +5,16 @@
 // any pattern here says nothing about whether the real Haiku classifier
 // would catch it; only testing against the real API can answer that.
 
-import { ClassifierLabel, ClassifierResult, Persona, SupportedLanguage, ToneVersions } from "./types";
+import { ClassifierLabel, ClassifierResult, Persona, SupportedLanguage, ToneExplanations, ToneVersions } from "./types";
+
+// Mirrors generator.ts's GeneratedRewrite shape without importing from that
+// module — generator.ts pulls in the Anthropic client, which mock mode is
+// specifically meant to avoid depending on.
+interface MockGeneratedRewrite {
+  versions: ToneVersions;
+  explanations: ToneExplanations;
+  directorsCut: string;
+}
 
 type ReasonFn = (phrase: string) => string;
 
@@ -191,12 +200,25 @@ function maximumDiplomacyMock(text: string): string {
 // the rewrite here: the mock is regex substitution, not comprehension, so
 // there's no meaningful way for it to "respond to their point." A trailing
 // note is enough to prove the value reaches this far in the pipeline.
-export function mockGenerateToneVersions(text: string, context?: string): ToneVersions {
+//
+// directorsCut and the per-tier explanations are likewise crude stand-ins:
+// enough to exercise the UI (the reveal-on-click block, the "why" captions),
+// not a demonstration of real content quality — see generator.ts for what
+// the live model actually produces.
+export function mockGenerateToneVersions(text: string, context?: string): MockGeneratedRewrite {
   const contextNote = context?.trim() ? ` [context noted: "${context.trim()}"]` : "";
   return {
-    stillYouJustCooler: stillYouJustCoolerMock(text) + contextNote,
-    professionalClear: professionalClearMock(text) + contextNote,
-    maximumDiplomacy: maximumDiplomacyMock(text) + contextNote,
+    versions: {
+      stillYouJustCooler: stillYouJustCoolerMock(text) + contextNote,
+      professionalClear: professionalClearMock(text) + contextNote,
+      maximumDiplomacy: maximumDiplomacyMock(text) + contextNote,
+    },
+    explanations: {
+      stillYouJustCooler: "Removed profanity and shouting; kept every point.",
+      professionalClear: "Softened word choice and dropped tangential comparisons.",
+      maximumDiplomacy: "Same edits as Professional & Clear, plus extra hedging.",
+    },
+    directorsCut: text + contextNote,
   };
 }
 

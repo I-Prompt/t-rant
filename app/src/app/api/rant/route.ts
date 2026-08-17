@@ -137,10 +137,10 @@ export async function POST(req: NextRequest) {
     case "clean":
     default: {
       try {
-        const versions = MOCK_MODE
+        const { versions, explanations, directorsCut } = MOCK_MODE
           ? mockGenerateToneVersions(text, context)
           : await generateToneVersions(text, context);
-        responseBody = { pathway: "clean", versions, intensity };
+        responseBody = { pathway: "clean", versions, explanations, directorsCut, intensity };
       } catch (err) {
         console.error("Generator error:", err);
         return NextResponse.json({ error: "Generation failed" }, { status: 502 });

@@ -41,6 +41,15 @@ export interface ToneVersions {
   maximumDiplomacy: string;
 }
 
+// One short "what changed and why" sentence per tone tier — the
+// diff-style-explanations bonus feature, see t-rant-phase2-brief.md
+// section 8. Generated alongside the rewrites, never a separate pass.
+export interface ToneExplanations {
+  stillYouJustCooler: string;
+  professionalClear: string;
+  maximumDiplomacy: string;
+}
+
 export type Pathway = "hard_no" | "serious" | "firm" | "witty" | "clean";
 
 // Attached to every non-"clean" pathway so the UI can show the user's raw
@@ -85,7 +94,18 @@ export type RantResponse =
       quote: { text: string; author: string | null };
       flagged: FlaggedInfo;
     }
-  | { pathway: "clean"; versions: ToneVersions; intensity: number };
+  | {
+      pathway: "clean";
+      versions: ToneVersions;
+      explanations: ToneExplanations;
+      // Director's Cut — a fourth, maximally-unfiltered version for the
+      // sender's eyes only, never meant to be sent. Deliberately kept as a
+      // sibling field rather than a fourth key on `versions`, so it can
+      // never accidentally end up in the share-link payload (which encodes
+      // `versions` wholesale — see copyShareLink in page.tsx).
+      directorsCut: string;
+      intensity: number;
+    };
 
 export type ApiRantResponse = RantResponse & { rateLimit: RateLimitInfo };
 

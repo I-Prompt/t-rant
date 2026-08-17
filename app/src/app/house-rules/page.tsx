@@ -31,10 +31,11 @@ export default function HouseRules() {
       <h1>House Rules</h1>
       <p>
         The plain-language version of how this tool works, what it does with your text, and where it
-        draws the line. Written once, by a person, not generated fresh per visitor.
+        draws the line. Written once, by a person, not generated fresh per visitor - laid out as the
+        questions people actually ask.
       </p>
 
-      <Section title="What the three tones mean">
+      <QA question="Okay but what do the three tones actually do differently?">
         <p>
           Every clean message gets rewritten three ways. All three keep your actual points: they only
           change how directly those points land.
@@ -58,9 +59,9 @@ export default function HouseRules() {
           (Original for all three: &quot;You never listen to me and it&apos;s driving me insane, this is
           the third time this week!&quot;)
         </p>
-      </Section>
+      </QA>
 
-      <Section title="How flagging works">
+      <QA question="What actually gets blocked, and why?">
         <p>
           Every message is classified before anything else happens. Nothing gets rewritten until it's
           confirmed clean. Here&apos;s roughly what routes where:
@@ -106,9 +107,9 @@ export default function HouseRules() {
           real help right now, the main page has two buttons above the textarea that skip
           classification entirely and go straight to the resource.
         </p>
-      </Section>
+      </QA>
 
-      <Section title="Try the classifier yourself">
+      <QA question="Can I see what the classifier does with my own words before I trust it?">
         <p>
           Type anything below and see exactly what category it gets and why - no rewrite is ever
           generated here, this only shows what the first-stage classifier sees. Note this demo runs the
@@ -116,13 +117,13 @@ export default function HouseRules() {
           not a guaranteed catch-all.
         </p>
         <ClassifierDemo />
-      </Section>
+      </QA>
 
-      <Section title="Privacy & data">
+      <QA question="Is my rant actually private, or is it going somewhere?">
         <p>
           No accounts, no stored rants, no tracking. Your IP address is read only to enforce the rate
-          limits below (see "Usage limits"): it's kept in memory for that check and isn't logged or
-          saved anywhere.
+          limits below (see "Is there a limit on how much I can use this?"): it's kept in memory for
+          that check and isn't logged or saved anywhere.
         </p>
         <p>
           All responses are generated using Anthropic&apos;s API, which (at the time this site launched)
@@ -141,9 +142,9 @@ export default function HouseRules() {
           on GitHub and look at the logging code yourself. What you see there is everything: there's no
           hidden file, database, or service where your rant text goes.
         </p>
-      </Section>
+      </QA>
 
-      <Section title="What we'll never add">
+      <QA question="Are you eventually going to slap ads or a paywall on this?">
         <ul>
           <li>Ads</li>
           <li>Reselling or sharing your text with anyone</li>
@@ -151,17 +152,17 @@ export default function HouseRules() {
           <li>Fake urgency or scarcity ("only 2 rewrites left today!")</li>
           <li>Paywalling a feature that already works for free</li>
         </ul>
-      </Section>
+      </QA>
 
-      <Section title="Usage limits">
+      <QA question="Is there a limit on how much I can use this?">
         <p>
           Roughly 10 rewrite requests per IP address per hour, to keep the tool sustainable and
           resistant to abuse. The classifier demo above has its own, separate allowance, so trying it
           out doesn&apos;t eat into your real rewrite budget.
         </p>
-      </Section>
+      </QA>
 
-      <Section title="The legal part">
+      <QA question="Can I just trust a rewrite and hit send?">
         <p>
           This is a portfolio/demo project, not professional communications software. Treat every
           rewrite as a suggestion: use your own judgment before sending anything.
@@ -171,15 +172,15 @@ export default function HouseRules() {
           self-harm pathway points to real crisis resources, but T-Rant itself is not a crisis service
           and has no ability to intervene.
         </p>
-      </Section>
+      </QA>
     </main>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function QA({ question, children }: { question: string; children: React.ReactNode }) {
   return (
-    <section style={{ marginTop: 32 }}>
-      <h2>{title}</h2>
+    <section style={{ marginTop: 40 }}>
+      <h2 style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.3 }}>{question}</h2>
       {children}
     </section>
   );

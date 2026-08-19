@@ -1,4 +1,4 @@
-import { HelpfulThing, SupportedLanguage } from "./types";
+import { HelpfulThing, InDangerContent, SupportedLanguage } from "./types";
 
 // Self-harm pathway copy, per language. English is the canonical version,
 // written by the project's creator. The other 6 are translations drafted by
@@ -18,23 +18,34 @@ import { HelpfulThing, SupportedLanguage } from "./types";
 // "helpful things") only works in English by design, so only the "en"
 // entry sets emphasizeFirstLetter: the translations carry the same
 // content and order, without the wordplay.
+//
+// 2026-08-19: the "in danger" content (someone disclosing they're being
+// hurt by another person) was redesigned and re-translated. The old version
+// led with findahelpline.com as if it were the primary contact regardless
+// of situation, which doesn't fit "in danger" framing — local emergency
+// numbers are the right first move for anyone in immediate physical danger.
+// The new `inDanger` block explicitly separates that from being hurt or
+// controlled by someone without immediate danger (a different, still real,
+// situation findahelpline.com's directory does cover well), and says
+// up front that T-Rant itself isn't equipped for either. Same
+// AI-translated-pending-human-review status as the rest of this file.
 
 export const SERIOUS_RESOURCE_URL = "https://findahelpline.com";
 
 export interface SelfHarmLocaleContent {
   selfHarmMessage: string;
-  inDangerMessage: string;
   emergencyNote: string;
   helpfulThings: HelpfulThing[];
+  inDanger: InDangerContent;
 }
 
 export const SELF_HARM_CONTENT: Record<SupportedLanguage, SelfHarmLocaleContent> = {
   en: {
-    selfHarmMessage: `Hi, I'm T-Rant's creator. What you're describing matters, and it deserves more than a rewritten message. Believe me - I know: just before creating this tool, I went through a difficult time myself, and in a way, it's what led me to build T-Rant. I'm feeling much better now - even though it didn't feel like I ever would - and you can too.
+    selfHarmMessage: `Hi, I'm T-Rant's creator. What you're going through matters, and it deserves more than a rewritten message.
+
+Believe me - I know: just before creating this tool, I went through a difficult time myself, and in a way, it's what led me to build T-Rant. I'm feeling much better now - even though it didn't feel like I ever would - and you can too.
 
 T-Rant isn't a crisis service and can't offer real support, but real help exists. findahelpline.com can connect you with a crisis line in your area, day or night.`,
-    inDangerMessage:
-      "It sounds like things are really hard right now. T-Rant isn't equipped to help with this: please reach out to people who are.",
     emergencyNote: "If you're in immediate danger, contact your local emergency services.",
     helpfulThings: [
       {
@@ -68,14 +79,21 @@ T-Rant isn't a crisis service and can't offer real support, but real help exists
         emphasizeFirstLetter: true,
       },
     ],
+    inDanger: {
+      intro:
+        "This could mean two different things - you might be in danger right now, or someone might be hurting you emotionally without it being an emergency this second. Either way, T-Rant can't help with this directly: it's a message-rewriting tool, not a support service. Here's where real help is.",
+      physicalNote: "In immediate physical danger? Call your local emergency number below, right now.",
+      emotionalNote:
+        "Being hurt, threatened, or controlled by someone - without immediate danger? findahelpline.com connects you to a support line in your area, day or night. Many countries also list a dedicated domestic-abuse helpline in the numbers above, once you pick your country.",
+    },
   },
 
   de: {
-    selfHarmMessage: `Hallo, ich bin der Entwickler von T-Rant. Was du gerade beschreibst, ist wichtig: das verdient mehr als nur eine umformulierte Nachricht. Glaub mir, ich weiß, wovon ich spreche: Kurz bevor ich dieses Tool gebaut habe, habe ich selbst eine schwere Zeit durchgemacht, und in gewisser Weise hat genau das mich dazu gebracht, T-Rant zu entwickeln. Mittlerweile geht es mir viel besser - auch wenn es sich lange Zeit nicht so angefühlt hat, als würde das je passieren - und dir kann es genauso gehen.
+    selfHarmMessage: `Hallo, ich bin der Entwickler von T-Rant. Was du gerade durchmachst, ist wichtig: das verdient mehr als nur eine umformulierte Nachricht.
+
+Glaub mir, ich weiß, wovon ich spreche: Kurz bevor ich dieses Tool gebaut habe, habe ich selbst eine schwere Zeit durchgemacht, und in gewisser Weise hat genau das mich dazu gebracht, T-Rant zu entwickeln. Mittlerweile geht es mir viel besser - auch wenn es sich lange Zeit nicht so angefühlt hat, als würde das je passieren - und dir kann es genauso gehen.
 
 T-Rant ist kein Kriseninterventionsdienst und kann keine echte Unterstützung bieten, aber echte Hilfe gibt es. findahelpline.com kann dich Tag und Nacht mit einer Beratungsstelle in deiner Nähe verbinden.`,
-    inDangerMessage:
-      "Das klingt gerade wirklich schwer. T-Rant ist dafür nicht die richtige Anlaufstelle: bitte wende dich an Menschen, die dir wirklich helfen können.",
     emergencyNote: "Wenn du dich in unmittelbarer Gefahr befindest, wende dich an den örtlichen Notruf.",
     helpfulThings: [
       {
@@ -104,14 +122,21 @@ T-Rant ist kein Kriseninterventionsdienst und kann keine echte Unterstützung bi
         body: "Nimm dir frei von der Arbeit, wenn möglich ('ich habe zu viel zu tun' zählt nicht als Grund, weiterzuarbeiten).",
       },
     ],
+    inDanger: {
+      intro:
+        "Das kann zwei verschiedene Dinge bedeuten: Entweder du bist gerade in Gefahr, oder jemand tut dir emotional weh, ohne dass es in diesem Moment ein Notfall ist. So oder so kann T-Rant dir dabei nicht direkt helfen - das ist ein Werkzeug zum Umformulieren von Nachrichten, kein Unterstützungsdienst. Hier findest du echte Hilfe.",
+      physicalNote: "Bist du gerade in unmittelbarer körperlicher Gefahr? Ruf jetzt deinen örtlichen Notruf an - die Nummer findest du unten.",
+      emotionalNote:
+        "Wirst du von jemandem verletzt, bedroht oder kontrolliert - ohne dass akute Gefahr besteht? findahelpline.com verbindet dich Tag und Nacht mit einer Beratungsstelle in deiner Nähe. Viele Länder listen außerdem eine eigene Hotline gegen häusliche Gewalt in den Nummern oben, sobald du dein Land auswählst.",
+    },
   },
 
   es: {
-    selfHarmMessage: `Hola, soy el creador de T-Rant. Lo que estás describiendo importa, y merece mucho más que un simple mensaje reescrito. Créeme, lo sé: justo antes de crear esta herramienta, yo mismo pasé por un momento muy difícil, y de alguna manera eso fue lo que me llevó a crear T-Rant. Ahora me siento mucho mejor - aunque durante mucho tiempo no sentí que eso fuera a pasar nunca - y a ti también puede pasarte.
+    selfHarmMessage: `Hola, soy el creador de T-Rant. Lo que estás atravesando importa, y merece mucho más que un simple mensaje reescrito.
+
+Créeme, lo sé: justo antes de crear esta herramienta, yo mismo pasé por un momento muy difícil, y de alguna manera eso fue lo que me llevó a crear T-Rant. Ahora me siento mucho mejor - aunque durante mucho tiempo no sentí que eso fuera a pasar nunca - y a ti también puede pasarte.
 
 T-Rant no es un servicio de crisis y no puede ofrecerte ayuda real, pero esa ayuda real existe. findahelpline.com puede conectarte con una línea de crisis en tu zona, a cualquier hora del día o de la noche.`,
-    inDangerMessage:
-      "Suena como si las cosas estuvieran siendo muy difíciles ahora mismo. T-Rant no está preparado para ayudarte con esto: por favor, busca ayuda de personas que sí puedan.",
     emergencyNote: "Si estás en peligro inmediato, contacta con los servicios de emergencia de tu zona.",
     helpfulThings: [
       {
@@ -140,14 +165,21 @@ T-Rant no es un servicio de crisis y no puede ofrecerte ayuda real, pero esa ayu
         body: "Tómate tiempo libre del trabajo, si es posible ('tengo demasiado que hacer' no cuenta como razón para seguir trabajando).",
       },
     ],
+    inDanger: {
+      intro:
+        "Esto puede significar dos cosas distintas: puede que estés en peligro ahora mismo, o que alguien te esté haciendo daño emocionalmente sin que sea una emergencia en este instante. En cualquier caso, T-Rant no puede ayudarte directamente con esto: es una herramienta para reescribir mensajes, no un servicio de apoyo. Aquí tienes dónde encontrar ayuda real.",
+      physicalNote: "¿Estás en peligro físico inmediato? Llama ahora mismo al número de emergencias de tu zona, más abajo.",
+      emotionalNote:
+        "¿Alguien te está haciendo daño, amenazando o controlando, sin que haya un peligro inmediato? findahelpline.com te conecta con una línea de apoyo en tu zona, a cualquier hora del día o de la noche. Muchos países también incluyen una línea específica contra la violencia doméstica en los números de arriba, en cuanto eliges tu país.",
+    },
   },
 
   it: {
-    selfHarmMessage: `Ciao, sono il creatore di T-Rant. Quello che stai descrivendo conta, e merita molto più di un semplice messaggio riscritto. Credimi, lo so bene: poco prima di creare questo strumento, ho attraversato anch'io un periodo difficile, e in un certo senso è stato proprio quello a portarmi a creare T-Rant. Ora sto molto meglio - anche se per molto tempo non mi sembrava possibile - e può succedere anche a te.
+    selfHarmMessage: `Ciao, sono il creatore di T-Rant. Quello che stai attraversando conta, e merita molto più di un semplice messaggio riscritto.
+
+Credimi, lo so bene: poco prima di creare questo strumento, ho attraversato anch'io un periodo difficile, e in un certo senso è stato proprio quello a portarmi a creare T-Rant. Ora sto molto meglio - anche se per molto tempo non mi sembrava possibile - e può succedere anche a te.
 
 T-Rant non è un servizio di crisi e non può offrirti un aiuto reale, ma un aiuto reale esiste. findahelpline.com può metterti in contatto con una linea di ascolto nella tua zona, giorno e notte.`,
-    inDangerMessage:
-      "Sembra che le cose siano davvero difficili in questo momento. T-Rant non è attrezzato per aiutarti con questo: ti prego di rivolgerti a persone che possono farlo davvero.",
     emergencyNote: "Se sei in pericolo immediato, contatta i servizi di emergenza della tua zona.",
     helpfulThings: [
       {
@@ -176,14 +208,21 @@ T-Rant non è un servizio di crisi e non può offrirti un aiuto reale, ma un aiu
         body: "Prenditi del tempo libero dal lavoro, se possibile ('ho troppo da fare' non è un motivo valido per continuare a lavorare).",
       },
     ],
+    inDanger: {
+      intro:
+        "Questo può significare due cose diverse: potresti essere in pericolo proprio adesso, oppure qualcuno potrebbe farti del male emotivamente senza che sia un'emergenza in questo momento. In ogni caso, T-Rant non può aiutarti direttamente con questo: è uno strumento per riscrivere messaggi, non un servizio di supporto. Ecco dove trovare un aiuto vero.",
+      physicalNote: "Sei in pericolo fisico immediato? Chiama subito il numero di emergenza della tua zona, qui sotto.",
+      emotionalNote:
+        "Qualcuno ti sta facendo del male, minacciando o controllando, senza un pericolo immediato? findahelpline.com ti mette in contatto con una linea di ascolto nella tua zona, giorno e notte. Molti paesi elencano anche una linea dedicata alla violenza domestica nei numeri qui sopra, non appena scegli il tuo paese.",
+    },
   },
 
   fr: {
-    selfHarmMessage: `Bonjour, je suis le créateur de T-Rant. Ce que tu décris compte, et ça mérite bien plus qu'un simple message reformulé. Crois-moi, je sais de quoi je parle : juste avant de créer cet outil, j'ai moi-même traversé une période difficile, et d'une certaine façon, c'est exactement ce qui m'a poussé à créer T-Rant. Je vais beaucoup mieux aujourd'hui - même si, pendant longtemps, je ne pensais pas que ce jour arriverait - et toi aussi, tu peux y arriver.
+    selfHarmMessage: `Bonjour, je suis le créateur de T-Rant. Ce que tu traverses compte, et ça mérite bien plus qu'un simple message reformulé.
+
+Crois-moi, je sais de quoi je parle : juste avant de créer cet outil, j'ai moi-même traversé une période difficile, et d'une certaine façon, c'est exactement ce qui m'a poussé à créer T-Rant. Je vais beaucoup mieux aujourd'hui - même si, pendant longtemps, je ne pensais pas que ce jour arriverait - et toi aussi, tu peux y arriver.
 
 T-Rant n'est pas un service de crise et ne peut pas t'offrir un vrai soutien, mais une vraie aide existe. findahelpline.com peut te mettre en relation avec une ligne d'écoute près de chez toi, jour et nuit.`,
-    inDangerMessage:
-      "On dirait que les choses sont vraiment difficiles en ce moment. T-Rant n'est pas équipé pour t'aider avec ça : merci de te tourner vers des personnes qui le peuvent vraiment.",
     emergencyNote: "Si tu es en danger immédiat, contacte les services d'urgence de ta région.",
     helpfulThings: [
       {
@@ -212,14 +251,21 @@ T-Rant n'est pas un service de crise et ne peut pas t'offrir un vrai soutien, ma
         body: "Prends du temps loin du travail, si possible ('j'ai trop de choses à faire' ne compte pas comme une raison de continuer à travailler).",
       },
     ],
+    inDanger: {
+      intro:
+        "Ça peut vouloir dire deux choses différentes : soit tu es en danger là, maintenant, soit quelqu'un te fait du mal émotionnellement sans que ce soit une urgence à cet instant précis. Dans les deux cas, T-Rant ne peut pas t'aider directement avec ça : c'est un outil de reformulation de messages, pas un service d'accompagnement. Voici où trouver une vraie aide.",
+      physicalNote: "Tu es en danger physique immédiat ? Appelle tout de suite le numéro d'urgence de ta région, ci-dessous.",
+      emotionalNote:
+        "Quelqu'un te fait du mal, te menace ou te contrôle, sans danger immédiat ? findahelpline.com te met en relation avec une ligne d'écoute près de chez toi, jour et nuit. Beaucoup de pays indiquent aussi une ligne dédiée aux violences conjugales dans les numéros ci-dessus, une fois que tu choisis ton pays.",
+    },
   },
 
   sv: {
-    selfHarmMessage: `Hej, jag är den som skapat T-Rant. Det du beskriver spelar roll, och det förtjänar mer än ett omskrivet meddelande. Tro mig - jag vet: strax innan jag skapade det här verktyget gick jag själv igenom en svår period, och på sätt och vis var det just det som fick mig att skapa T-Rant. Jag mår mycket bättre nu - även om det under lång tid inte kändes som att det någonsin skulle bli så - och det kan bli så för dig också.
+    selfHarmMessage: `Hej, jag är den som skapat T-Rant. Det du går igenom spelar roll, och det förtjänar mer än ett omskrivet meddelande.
+
+Tro mig - jag vet: strax innan jag skapade det här verktyget gick jag själv igenom en svår period, och på sätt och vis var det just det som fick mig att skapa T-Rant. Jag mår mycket bättre nu - även om det under lång tid inte kändes som att det någonsin skulle bli så - och det kan bli så för dig också.
 
 T-Rant är ingen krisjour och kan inte erbjuda verkligt stöd, men verklig hjälp finns. findahelpline.com kan koppla dig till en stödlinje där du bor, dygnet runt.`,
-    inDangerMessage:
-      "Det låter som att saker och ting är väldigt tunga just nu. T-Rant är inte rätt plats för att hjälpa dig med det här: vänd dig till människor som faktiskt kan.",
     emergencyNote: "Om du är i akut fara, kontakta larmnumret där du bor.",
     helpfulThings: [
       {
@@ -248,14 +294,21 @@ T-Rant är ingen krisjour och kan inte erbjuda verkligt stöd, men verklig hjäl
         body: "Ta ledigt från jobbet, om det går ('jag har för mycket att göra' räknas inte som skäl att fortsätta jobba).",
       },
     ],
+    inDanger: {
+      intro:
+        "Det här kan betyda två olika saker: antingen är du i fara just nu, eller så blir du känslomässigt sårad av någon utan att det är en akut nödsituation just i denna stund. Oavsett vilket kan T-Rant inte hjälpa dig direkt med det här: det är ett verktyg för att skriva om meddelanden, inte en stödtjänst. Här hittar du verklig hjälp.",
+      physicalNote: "Är du i omedelbar fysisk fara? Ring larmnumret där du bor direkt, du hittar det nedan.",
+      emotionalNote:
+        "Blir du sårad, hotad eller kontrollerad av någon - utan att det är akut just nu? findahelpline.com kopplar dig till en stödlinje där du bor, dygnet runt. Många länder listar också en särskild linje mot våld i nära relationer i numren ovan, så snart du väljer land.",
+    },
   },
 
   ru: {
-    selfHarmMessage: `Привет, я создатель T-Rant. То, о чём ты пишешь, важно: и заслуживает большего, чем просто переписанное сообщение. Поверь, я знаю, о чём говорю: незадолго до того, как я создал этот инструмент, я сам прошёл через тяжёлый период, и в каком-то смысле именно это привело меня к созданию T-Rant. Сейчас мне намного лучше - хотя долгое время казалось, что этого никогда не случится, - и с тобой тоже может стать лучше.
+    selfHarmMessage: `Привет, я создатель T-Rant. То, через что ты сейчас проходишь, важно: и заслуживает большего, чем просто переписанное сообщение.
+
+Поверь, я знаю, о чём говорю: незадолго до того, как я создал этот инструмент, я сам прошёл через тяжёлый период, и в каком-то смысле именно это привело меня к созданию T-Rant. Сейчас мне намного лучше - хотя долгое время казалось, что этого никогда не случится, - и с тобой тоже может стать лучше.
 
 T-Rant не служба экстренной помощи и не может предложить реальную поддержку, но реальная помощь существует. findahelpline.com может связать тебя с линией поддержки в твоём регионе, в любое время дня и ночи.`,
-    inDangerMessage:
-      "Похоже, сейчас тебе действительно тяжело. T-Rant не предназначен для помощи в такой ситуации: пожалуйста, обратись к людям, которые действительно могут помочь.",
     emergencyNote: "Если ты находишься в непосредственной опасности, обратись в экстренные службы своего региона.",
     helpfulThings: [
       {
@@ -284,5 +337,12 @@ T-Rant не служба экстренной помощи и не может п
         body: "Возьми паузу на работе, если это возможно ('у меня слишком много дел' не считается причиной продолжать работать).",
       },
     ],
+    inDanger: {
+      intro:
+        "Это может означать две разные вещи: либо ты сейчас в опасности, либо кто-то причиняет тебе эмоциональную боль, хотя прямо сейчас это не экстренная ситуация. В любом случае T-Rant не может помочь тебе напрямую: это инструмент для переписывания сообщений, а не служба поддержки. Вот где найти настоящую помощь.",
+      physicalNote: "Находишься в непосредственной физической опасности? Позвони по номеру экстренных служб своего региона прямо сейчас - он указан ниже.",
+      emotionalNote:
+        "Кто-то причиняет тебе боль, угрожает или контролирует тебя, но без непосредственной опасности прямо сейчас? findahelpline.com свяжет тебя с линией поддержки в твоём регионе, в любое время дня и ночи. Во многих странах в номерах выше также указана отдельная горячая линия по домашнему насилию - как только ты выберешь страну.",
+    },
   },
 };

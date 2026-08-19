@@ -42,6 +42,8 @@ Two-stage pipeline, not one big prompt trying to do everything at once: a dedica
 
 ## Visual design — playing the T-Rex angle
 
+**Superseded 2026-08-19:** the "small arms, big feelings" tagline below was dropped from all user-facing copy (README, in-app brand band, easter egg) — it reads as a joke at the expense of people with limb differences, which isn't the intent. Tagline is now "Big feelings. Smart translation." The tiny-arm detail stays in the pixel sprite itself (see `lib/rexSprite.ts`) as a small visual gag, not a spoken/written phrase.
+
 **Core bit:** small arms, big feelings. Leaning into the tiny-T-rex-arms meme ("small arms, big feelings, smart translation") is funnier and safer for a corporate audience than trying to make the dinosaur look intimidating.
 
 **Sprite states, one per tone plus special states:**

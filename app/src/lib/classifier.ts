@@ -76,7 +76,13 @@ export async function classify(text: string): Promise<ClassifierResult> {
 
   const response = await client.messages.create({
     model: HAIKU_MODEL,
-    max_tokens: 100,
+    // 100 was too tight: the tool call has to fit up to 2 flagged phrases
+    // (echoed once in flagged_phrases, sometimes again inline in reason)
+    // plus the reason sentence itself, and for longer flagged text this
+    // occasionally ran out of budget mid-field, silently truncating
+    // `reason` to empty — undermining the one feature ("every block shows
+    // its work") this classifier exists to support. 300 leaves headroom.
+    max_tokens: 300,
     system: SYSTEM_PROMPT,
     messages: [
       {

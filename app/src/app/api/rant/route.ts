@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
       const content = SELF_HARM_CONTENT[language];
       responseBody = {
         pathway: "serious",
+        kind: "self_harm",
         message: content.selfHarmMessage,
         resourceUrl: SERIOUS_RESOURCE_URL,
         emergencyNote: content.emergencyNote,
@@ -108,9 +109,10 @@ export async function POST(req: NextRequest) {
       const content = SELF_HARM_CONTENT[language];
       responseBody = {
         pathway: "serious",
-        message: content.inDangerMessage,
+        kind: "in_danger",
+        message: content.inDanger.intro,
         resourceUrl: SERIOUS_RESOURCE_URL,
-        emergencyNote: content.emergencyNote,
+        inDanger: content.inDanger,
         flagged,
       };
       break;

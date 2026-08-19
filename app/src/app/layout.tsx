@@ -1,25 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Press_Start_2P } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
+import Sidebar from "@/components/Sidebar";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Space Grotesk, not Geist Sans: same "one font everywhere" rule as before
+// (see globals.css), just a font with more visual character - Geist read as
+// too generic/interchangeable-with-any-SaaS-product for a portfolio piece
+// meant to look distinctive. Still fully readable at body-copy sizes.
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-body",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Retro blocky header font, per t-rant-technical-spec.md's visual design
-// section. Applied narrowly (brand mark, main heading, tone headings) via
-// var(--font-pixel) — Press Start 2P is unreadable at body-text sizes or in
-// long sentences, so it never touches paragraph copy.
-const pixelFont = Press_Start_2P({
-  variable: "--font-pixel",
-  subsets: ["latin"],
-  weight: "400",
 });
 
 const SITE_DESCRIPTION =
@@ -42,8 +32,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${pixelFont.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={spaceGrotesk.variable}>
+      <body>
+        <div className="trant-shell">
+          <Sidebar />
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

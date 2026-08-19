@@ -22,7 +22,7 @@ export function mockClassify(text: string): ClassifierResult {
   const rules: [ClassifierLabel, RegExp, ReasonFn, SupportedLanguage][] = [
     [
       "hard_no",
-      /\b(child porn|csae|traffick\w*|how to make a bomb|steal.*credit card)\b/i,
+      /\b(child porn|csae|traffick\w*|traffic (?:a|the|this) (?:child|kid|minor)|how to make a bomb|steal.*credit card)\b/i,
       (p) => `This falls into a category T-Rant never engages with ("${p}").`,
       "en",
     ],
@@ -40,7 +40,7 @@ export function mockClassify(text: string): ClassifierResult {
     ],
     [
       "violent_threat",
-      /\b(?:i(?:'| a)?m going to (?:kill|hurt|beat up) [a-z]+|never come back[^.!?]{0,40}i(?:'ll| will) (?:arrange|make (?:sure|certain)|see to it)|i'll (?:arrange|make sure) (?:that|you))\b/i,
+      /\b(?:i(?:'| a)?m going to (?:kill|hurt|beat up) [a-z]+|never come back[^.!?]{0,40}i(?:'ll| will) (?:arrange|make (?:sure|certain)|see to it)|i'll (?:arrange|make sure) (?:that|you)|i(?:'ll| will) find you[^.!?]{0,60}\b(?:make (?:sure|certain)|see to it|days are (?:limited|numbered))\b|your days are (?:limited|numbered))\b/i,
       (p) => `That reads as a specific threat against a named person ("${p}"), not venting.`,
       "en",
     ],
@@ -198,27 +198,29 @@ function maximumDiplomacyMock(text: string): string {
 // Context is accepted for signature parity with generator.ts's real
 // implementation (see t-rant-phase2-brief.md section 8) but not woven into
 // the rewrite here: the mock is regex substitution, not comprehension, so
-// there's no meaningful way for it to "respond to their point." A trailing
-// note is enough to prove the value reaches this far in the pipeline.
+// there's no meaningful way for it to "respond to their point." It's simply
+// unused — no "[context noted: ...]" debug marker gets appended to the
+// output either; that used to leak mock-internal state into user-facing
+// copy, which read as a broken rewrite rather than a documented mock
+// limitation.
 //
 // directorsCut and the per-tier explanations are likewise crude stand-ins:
 // enough to exercise the UI (the reveal-on-click block, the "why" captions),
 // not a demonstration of real content quality — see generator.ts for what
 // the live model actually produces.
-export function mockGenerateToneVersions(text: string, context?: string): MockGeneratedRewrite {
-  const contextNote = context?.trim() ? ` [context noted: "${context.trim()}"]` : "";
+export function mockGenerateToneVersions(text: string, _context?: string): MockGeneratedRewrite {
   return {
     versions: {
-      stillYouJustCooler: stillYouJustCoolerMock(text) + contextNote,
-      professionalClear: professionalClearMock(text) + contextNote,
-      maximumDiplomacy: maximumDiplomacyMock(text) + contextNote,
+      stillYouJustCooler: stillYouJustCoolerMock(text),
+      professionalClear: professionalClearMock(text),
+      maximumDiplomacy: maximumDiplomacyMock(text),
     },
     explanations: {
       stillYouJustCooler: "Removed profanity and shouting; kept every point.",
       professionalClear: "Softened word choice and dropped tangential comparisons.",
       maximumDiplomacy: "Same edits as Professional & Clear, plus extra hedging.",
     },
-    directorsCut: text + contextNote,
+    directorsCut: text,
   };
 }
 

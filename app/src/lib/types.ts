@@ -77,14 +77,40 @@ export interface HelpfulThing {
   optional?: boolean;
 }
 
+// The "serious" pathway covers two different situations that need different
+// framing — see t-rant-phase2-brief.md's original design plus the 2026-08-19
+// redesign: someone about to act on self-harm needs a different response
+// than someone disclosing they're being hurt by another person, and the
+// latter is itself ambiguous between "in physical danger right now" and
+// "being hurt emotionally, no immediate danger." `kind` lets the UI branch;
+// `inDanger` only exists for kind "in_danger".
+export type SeriousKind = "self_harm" | "in_danger";
+
+export interface InDangerContent {
+  // Acknowledges the physical/emotional ambiguity up front and states
+  // plainly that T-Rant isn't equipped for either — shown before the two
+  // resource blocks below.
+  intro: string;
+  // Local emergency numbers are shown first for this pathway (see
+  // EmergencyNumbersPicker in page.tsx) — this is the label/context shown
+  // just above that picker.
+  physicalNote: string;
+  // findahelpline.com, reframed as the path for emotional harm/being
+  // controlled by someone without immediate danger, not a generic primary
+  // link — shown second, below the emergency numbers.
+  emotionalNote: string;
+}
+
 export type RantResponse =
   | { pathway: "hard_no"; message: string; flagged: FlaggedInfo }
   | {
       pathway: "serious";
+      kind: SeriousKind;
       message: string;
       resourceUrl: string;
-      emergencyNote: string;
+      emergencyNote?: string;
       helpfulThings?: HelpfulThing[];
+      inDanger?: InDangerContent;
       flagged: FlaggedInfo;
     }
   | { pathway: "firm"; message: string; flagged: FlaggedInfo }

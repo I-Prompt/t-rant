@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EMERGENCY_NUMBERS } from "@/lib/emergencyNumbers";
 import { SELF_HARM_CONTENT, SERIOUS_RESOURCE_URL } from "@/lib/selfHarmContent";
 import { playHardStopTone, playStomp, playToneBlip, playWittyWomp, ToneKey } from "@/lib/sounds";
 import { getRexCells, REX_GRID_H, REX_GRID_W, RexPose } from "@/lib/rexSprite";
+import { UNWIND_LINKS } from "@/lib/unwindLinks";
 import {
   ApiRantResponse,
   CONTEXT_MAX_CHARS,
@@ -106,7 +106,17 @@ const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "Ar
 // pathway, so those states stay unbranded on purpose.
 const REX_CELL = 8;
 
-function PixelRex({ pose, size = 48, animate = false }: { pose: RexPose; size?: number; animate?: boolean }) {
+function PixelRex({
+  pose,
+  size = 48,
+  animate = false,
+  animateDuration = "0.5s",
+}: {
+  pose: RexPose;
+  size?: number;
+  animate?: boolean;
+  animateDuration?: string;
+}) {
   const cells = getRexCells(pose);
   const w = REX_GRID_W * REX_CELL;
   const h = REX_GRID_H * REX_CELL;
@@ -126,7 +136,7 @@ function PixelRex({ pose, size = 48, animate = false }: { pose: RexPose; size?: 
             attributeName="transform"
             type="translate"
             values="0 0; 0 -3; 0 0"
-            dur="0.5s"
+            dur={animateDuration}
             repeatCount="indefinite"
           />
         )}
@@ -150,60 +160,116 @@ function ToneHeading({ pose, label, tone, onClick }: { pose: RexPose; label: str
         all: "unset",
         display: "flex",
         alignItems: "center",
-        gap: 8,
+        gap: 10,
         cursor: "pointer",
-        marginTop: 20,
+        marginTop: 22,
       }}
     >
-      <PixelRex pose={pose} size={32} />
-      <h2 style={{ margin: 0, fontFamily: "var(--font-pixel)", fontSize: 15, lineHeight: 1.5 }}>{label}</h2>
+      <PixelRex pose={pose} size={30} />
+      <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "var(--color-text)" }}>{label}</h2>
     </button>
   );
 }
 
-// Pixelated prehistoric backdrop: a repeating fern band along the bottom
-// edge and one volcano, all code-generated (no image asset), kept faint so
-// it never fights foreground text for contrast. Deliberately not rendered
-// during the "serious" pathway — that state steps out of the pixel theme
-// entirely, per t-rant-technical-spec.md.
-function PrehistoricBackground() {
-  const fernColor = "#8fa88f";
-  const volcanoColor = "#a89a80";
-
+// Ambient site background: one large soft glow in each far corner plus a
+// single smooth horizon silhouette along the bottom edge — a quieter,
+// modern take on the previous repeating pixel-fern/volcano pattern (busy at
+// this scale, reads as clutter rather than atmosphere). Deliberately not
+// rendered during the "serious" pathway, same as before: that state steps
+// out of the branded look entirely.
+function AmbientBackground() {
   return (
-    <svg
-      viewBox="0 0 400 300"
-      preserveAspectRatio="xMidYMax slice"
+    <div
       aria-hidden="true"
+      style={{ position: "fixed", inset: 0, zIndex: -1, overflow: "hidden", pointerEvents: "none" }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: "-12%",
+          right: "-10%",
+          width: 460,
+          height: 460,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(168,85,44,0.15), rgba(168,85,44,0) 70%)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-18%",
+          left: "-12%",
+          width: 520,
+          height: 520,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(107,143,113,0.16), rgba(107,143,113,0) 70%)",
+        }}
+      />
+      <svg
+        viewBox="0 0 800 200"
+        preserveAspectRatio="none"
+        style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "20vh", opacity: 0.08 }}
+      >
+        <path
+          d="M0,140 C120,95 220,165 340,120 C460,75 560,150 680,110 C740,90 780,100 800,96 L800,200 L0,200 Z"
+          fill="#6b8f71"
+        />
+      </svg>
+    </div>
+  );
+}
+
+// Small "how to use this box" callout, right above the textarea. The tool
+// only works if the input reads like the actual message someone would send,
+// not a third-person description of the feeling behind it — worth saying
+// explicitly rather than assuming it's obvious.
+function WritingGuidance() {
+  return (
+    <div
       style={{
-        position: "fixed",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        zIndex: -1,
-        opacity: 0.3,
-        pointerEvents: "none",
+        marginBottom: 14,
+        padding: "14px 16px",
+        borderRadius: "var(--radius-sm)",
+        background: "var(--color-surface-muted)",
+        border: "1px solid var(--color-border)",
       }}
     >
-      <defs>
-        <pattern id="rex-ferns" width="34" height="40" patternUnits="userSpaceOnUse">
-          <rect x="15" y="24" width="4" height="16" fill={fernColor} />
-          <rect x="11" y="20" width="4" height="4" fill={fernColor} />
-          <rect x="7" y="16" width="4" height="4" fill={fernColor} />
-          <rect x="19" y="20" width="4" height="4" fill={fernColor} />
-          <rect x="23" y="16" width="4" height="4" fill={fernColor} />
-          <rect x="11" y="28" width="4" height="4" fill={fernColor} />
-          <rect x="19" y="28" width="4" height="4" fill={fernColor} />
-        </pattern>
-      </defs>
-      <rect x="0" y="230" width="400" height="70" fill="url(#rex-ferns)" />
-      {/* Volcano: stepped pixel triangle with a lava-orange peak. */}
-      <rect x="330" y="150" width="10" height="10" fill="#c0392b" />
-      <rect x="320" y="160" width="30" height="10" fill={volcanoColor} />
-      <rect x="310" y="170" width="50" height="10" fill={volcanoColor} />
-      <rect x="300" y="180" width="70" height="10" fill={volcanoColor} />
-      <rect x="290" y="190" width="90" height="10" fill={volcanoColor} />
-    </svg>
+      <p
+        style={{
+          fontSize: 11.5,
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+          color: "var(--color-text-faint)",
+          marginBottom: 10,
+        }}
+      >
+        Write it like you&apos;d actually send it
+      </p>
+      <div style={{ display: "grid", gap: 8, fontSize: 14 }}>
+        <p style={{ color: "var(--color-text-faint)" }}>
+          <span style={{ color: "#b3453a", fontWeight: 700 }}>✗</span> &quot;I feel really annoyed that Steve keeps
+          eating all the snacks in the break room.&quot;{" "}
+          <em style={{ fontStyle: "normal", color: "var(--color-text-faint)" }}>— describing the feeling</em>
+        </p>
+        <p style={{ color: "var(--color-text)" }}>
+          <span style={{ color: "var(--color-sage)", fontWeight: 700 }}>✓</span> &quot;STEVE. You absolute
+          Brontosaurus, you ate every fern in the break room AGAIN and didn&apos;t save me one!!&quot;{" "}
+          <em style={{ fontStyle: "normal", color: "var(--color-text-faint)" }}>— the actual message</em>
+        </p>
+      </div>
+      <p style={{ marginTop: 10, fontSize: 12.5, color: "var(--color-text-faint)" }}>
+        Paste (or type) the real thing, typos and all — we handle turning it into something you can send.
+      </p>
+    </div>
+  );
+}
+
+function CharCount({ value, max }: { value: number; max: number }) {
+  return (
+    <span style={{ fontSize: 12, color: "var(--color-text-faint)" }}>
+      {value.toLocaleString("en-US")} / {max.toLocaleString("en-US")} characters
+    </span>
   );
 }
 
@@ -217,9 +283,24 @@ export default function Home() {
   const [rateLimit, setRateLimit] = useState<RateLimitInfo | null>(null);
   const [sharedData, setSharedData] = useState<SharedPayload | null>(null);
   const [easterEgg, setEasterEgg] = useState(false);
+  const [mockMode, setMockMode] = useState(false);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const konamiProgress = useRef(0);
+
+  const isSerious = result?.pathway === "serious";
+
+  // Shows a small badge when the server is running with MOCK_MODE=true, so
+  // "the rewrite barely changed anything" or "the blocker missed something"
+  // reads as expected mock-mode behavior instead of a real pipeline bug -
+  // this exact confusion has come up more than once. Failure here (offline,
+  // etc.) just means no badge, never a broken page.
+  useEffect(() => {
+    fetch("/api/mode")
+      .then((res) => res.json())
+      .then((data) => setMockMode(Boolean(data.mockMode)))
+      .catch(() => {});
+  }, []);
 
   // Bookmarklet prefill (?rant=...) and output-only share links (?shared=...).
   // See t-rant-safety-legal-update.md section 6 and t-rant-phase2-brief.md
@@ -253,6 +334,14 @@ export default function Home() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
+
+  // While the serious (self-harm/in-danger) pathway is showing, the rest of
+  // the page's chrome (hero, form, nav) hides so this is the only thing on
+  // screen — see AppShell's sidebar dimming rule in globals.css, keyed off
+  // this attribute, plus the conditional rendering below.
+  useEffect(() => {
+    document.documentElement.setAttribute("data-calm-mode", isSerious ? "true" : "false");
+  }, [isSerious]);
 
   // Thin wrapper around the lib/sounds.ts oscillator functions: audio is a
   // nice-to-have, so a failure here should never break the actual response.
@@ -324,14 +413,32 @@ export default function Home() {
     setError(null);
     setSharedData(null);
     const content = SELF_HARM_CONTENT[resolveHelpLanguage(text)];
-    setResult({
-      pathway: "serious",
-      message: kind === "self_harm" ? content.selfHarmMessage : content.inDangerMessage,
-      resourceUrl: SERIOUS_RESOURCE_URL,
-      emergencyNote: content.emergencyNote,
-      helpfulThings: kind === "self_harm" ? content.helpfulThings : undefined,
-      flagged: EMPTY_FLAGGED,
-    });
+    if (kind === "self_harm") {
+      setResult({
+        pathway: "serious",
+        kind: "self_harm",
+        message: content.selfHarmMessage,
+        resourceUrl: SERIOUS_RESOURCE_URL,
+        emergencyNote: content.emergencyNote,
+        helpfulThings: content.helpfulThings,
+        flagged: EMPTY_FLAGGED,
+      });
+    } else {
+      setResult({
+        pathway: "serious",
+        kind: "in_danger",
+        message: content.inDanger.intro,
+        resourceUrl: SERIOUS_RESOURCE_URL,
+        inDanger: content.inDanger,
+        flagged: EMPTY_FLAGGED,
+      });
+    }
+  }
+
+  function resetToStart() {
+    setResult(null);
+    setError(null);
+    setSubmittedText("");
   }
 
   if (sharedData) {
@@ -339,73 +446,126 @@ export default function Home() {
   }
 
   return (
-    <main style={{ maxWidth: 640, margin: "40px auto", padding: "0 16px", fontFamily: "sans-serif" }}>
-      {result?.pathway !== "serious" && <PrehistoricBackground />}
-      <h1 style={{ fontFamily: "var(--font-pixel)", fontSize: 28, lineHeight: 1.4 }}>T-Rant</h1>
-      <p>Paste your heated draft below.</p>
-      <p style={{ fontSize: 14 }}>
-        <Link href="/house-rules">House Rules</Link>: how tones, flagging, and privacy work, plus a
-        live classifier demo.
-      </p>
+    <main style={{ maxWidth: 700, margin: "0 auto", padding: "48px 28px 64px" }}>
+      {!isSerious && <AmbientBackground />}
 
-      {easterEgg && (
-        <p style={{ padding: 8, background: "#fff3cd", borderRadius: 6, fontSize: 14 }}>
-          🦖 Roar. Small arms, big feelings, you found the secret handshake.
-        </p>
-      )}
-
-      <BrandCard>
-        <form onSubmit={handleSubmit}>
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            maxLength={MAX_CHARS}
-            rows={8}
-            style={{ width: "100%", fontSize: 16, padding: 8 }}
-            placeholder="What's got you fired up?"
-          />
-          <RageThermometer text={text} />
-          <div style={{ marginTop: 10 }}>
-            <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4 }}>
-              What did they say or do? <span style={{ color: "#999" }}>(optional)</span>
-            </label>
-            <textarea
-              value={context}
-              onChange={(e) => setContext(e.target.value)}
-              maxLength={CONTEXT_MAX_CHARS}
-              rows={2}
-              style={{ width: "100%", fontSize: 14, padding: 8 }}
-              placeholder="Give the rewrite something to respond to, in their words - not required."
-            />
-            <span style={{ fontSize: 12, color: "#999" }}>
-              {context.length} / {CONTEXT_MAX_CHARS}
-            </span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-            <span>{text.length} / {MAX_CHARS}</span>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {loading && <PixelRex pose="idle" size={32} animate />}
-              <button type="submit" disabled={loading || !text.trim()}>
-                {loading ? "T-Rex is thinking..." : "Translate"}
-              </button>
+      {!isSerious && (
+        <>
+          {mockMode && (
+            <p
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "var(--color-text-soft)",
+                background: "var(--color-surface-muted)",
+                border: "1px solid var(--color-border)",
+                borderRadius: 999,
+                padding: "5px 12px",
+                display: "inline-block",
+                marginBottom: 14,
+              }}
+            >
+              🧪 Mock mode: rewrites and blocking use crude local patterns, not the real AI
+            </p>
+          )}
+          <header style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <PixelRex pose="idle" size={104} animate animateDuration="2.6s" />
+            <div>
+              <h1 style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1, color: "var(--color-text)" }}>
+                T-Rant
+              </h1>
+              <p
+                style={{
+                  marginTop: 4,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "var(--color-accent)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                Big feelings. Smart translation.
+              </p>
             </div>
-          </div>
-        </form>
-      </BrandCard>
+          </header>
+          <p style={{ marginTop: 16, fontSize: 15.5, color: "var(--color-text-soft)", maxWidth: 540, lineHeight: 1.6 }}>
+            Paste your heated draft below — get three versions you can actually send, at your pick of
+            diplomacy.
+          </p>
 
-      <HelpNowBar onHelp={showHelpNow} />
+          {easterEgg && (
+            <p
+              style={{
+                marginTop: 14,
+                padding: "10px 14px",
+                background: "var(--color-accent-soft)",
+                borderRadius: "var(--radius-sm)",
+                fontSize: 14,
+              }}
+            >
+              🦖 Roar. You found the secret handshake.
+            </p>
+          )}
 
-      {rateLimit && (
-        <p style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
-          {rateLimit.remaining} of {rateLimit.limit} rants left this hour
-        </p>
+          <BrandCard>
+            <form onSubmit={handleSubmit}>
+              <WritingGuidance />
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                maxLength={MAX_CHARS}
+                rows={8}
+                className="trant-field"
+                style={{ fontSize: 16 }}
+                placeholder="What's got you fired up?"
+              />
+              <RageThermometer text={text} />
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+                <CharCount value={text.length} max={MAX_CHARS} />
+              </div>
+
+              <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--color-border)" }}>
+                <label style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text)", display: "block", marginBottom: 6 }}>
+                  What set this off? <span style={{ fontWeight: 400, color: "var(--color-text-faint)" }}>(optional)</span>
+                </label>
+                <textarea
+                  value={context}
+                  onChange={(e) => setContext(e.target.value)}
+                  maxLength={CONTEXT_MAX_CHARS}
+                  rows={2}
+                  className="trant-field"
+                  style={{ fontSize: 14 }}
+                  placeholder="Quote or summarize what they said or did — helps the rewrite address their actual point, not just your tone."
+                />
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+                  <CharCount value={context.length} max={CONTEXT_MAX_CHARS} />
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginTop: 20 }}>
+                {loading && <PixelRex pose="idle" size={30} animate />}
+                <button type="submit" className="trant-btn trant-btn-primary" disabled={loading || !text.trim()}>
+                  {loading ? "T-Rex is thinking..." : "Translate"}
+                </button>
+              </div>
+            </form>
+          </BrandCard>
+
+          <HelpNowBar onHelp={showHelpNow} />
+
+          {rateLimit && (
+            <p style={{ fontSize: 13, color: "var(--color-text-faint)", marginTop: 6 }}>
+              {rateLimit.remaining} of {rateLimit.limit} rants left this hour
+            </p>
+          )}
+
+          {error && <p style={{ color: "#b3453a", marginTop: 8 }}>{error}</p>}
+        </>
       )}
-
-      {error && <p style={{ color: "crimson" }}>{error}</p>}
 
       {result &&
         (result.pathway === "serious" ? (
-          <ResultView result={result} originalText={submittedText} onToneClick={playTone} />
+          <SeriousCard result={result} onReset={resetToStart} />
         ) : (
           <BrandCard>
             <ResultView result={result} originalText={submittedText} onToneClick={playTone} />
@@ -413,7 +573,7 @@ export default function Home() {
         ))}
       {result && result.pathway !== "serious" && <UnwindLinks />}
 
-      <PrivacyNotice />
+      {!isSerious && <PrivacyNotice />}
     </main>
   );
 }
@@ -426,18 +586,27 @@ export default function Home() {
 // t-rant-safety-legal-update.md section 1.
 function BrandCard({ children }: { children: React.ReactNode }) {
   const bandStyle: React.CSSProperties = {
-    padding: "6px 14px",
+    padding: "7px 16px",
     background: "#2d2a24",
     color: "#f5f0e6",
-    fontSize: 11,
-    letterSpacing: 0.5,
-    fontFamily: "var(--font-pixel)",
+    fontSize: 12.5,
+    fontWeight: 600,
+    letterSpacing: 0.2,
   };
   return (
-    <div style={{ border: "1px solid #ddd", borderRadius: 8, overflow: "hidden", margin: "16px 0" }}>
+    <div
+      style={{
+        border: "1px solid var(--color-border)",
+        borderRadius: "var(--radius-md)",
+        overflow: "hidden",
+        margin: "22px 0",
+        background: "var(--color-surface)",
+        boxShadow: "var(--shadow-sm)",
+      }}
+    >
       <div style={bandStyle}>🦖 T-Rant</div>
-      <div style={{ padding: 16 }}>{children}</div>
-      <div style={{ ...bandStyle, fontSize: 9 }}>🦖 T-Rant · small arms, big feelings</div>
+      <div style={{ padding: 20 }}>{children}</div>
+      <div style={{ ...bandStyle, fontSize: 10.5 }}>🦖 T-Rant · big feelings, smart translation</div>
     </div>
   );
 }
@@ -457,18 +626,18 @@ function RageThermometer({ text }: { text: string }) {
   if (!text.trim()) return null;
 
   return (
-    <div style={{ marginTop: 6 }}>
-      <div style={{ height: 6, background: "#eee", borderRadius: 3, overflow: "hidden" }}>
+    <div style={{ marginTop: 10 }}>
+      <div style={{ height: 6, background: "var(--color-border)", borderRadius: 3, overflow: "hidden" }}>
         <div
           style={{
             height: "100%",
             width: `${(level / 10) * 100}%`,
-            background: level > 7 ? "#c0392b" : level > 4 ? "#e67e22" : "#7fa77f",
+            background: level > 7 ? "#c0392b" : level > 4 ? "#e67e22" : "var(--color-sage)",
             transition: "width 150ms ease-out",
           }}
         />
       </div>
-      <span style={{ fontSize: 12, color: "#888" }}>rage preview: {Math.round(level)}/10</span>
+      <span style={{ fontSize: 12, color: "var(--color-text-faint)" }}>rage preview: {Math.round(level)}/10</span>
     </div>
   );
 }
@@ -484,16 +653,17 @@ function HelpNowBar({ onHelp }: { onHelp: (kind: "self_harm" | "in_danger") => v
     border: "none",
     padding: 0,
     font: "inherit",
-    color: "#7a8a7a",
+    fontWeight: 600,
+    color: "var(--color-calm-accent2)",
     textDecoration: "underline",
     cursor: "pointer",
   };
   return (
-    <p style={{ fontSize: 12.5, color: "#999", margin: "8px 0 0" }}>
-      No need to type anything first if you're thinking about hurting yourself, or someone is
-      hurting you:{" "}
+    <p style={{ fontSize: 13, color: "var(--color-text-faint)", margin: "12px 0 0", lineHeight: 1.6 }}>
+      If you&apos;re thinking about hurting yourself, or someone is hurting you, no need to type anything
+      first, just click one of the buttons below:{" "}
       <button type="button" onClick={() => onHelp("self_harm")} style={linkButtonStyle}>
-        I'm thinking about hurting myself
+        I&apos;m thinking about hurting myself
       </button>
       {" · "}
       <button type="button" onClick={() => onHelp("in_danger")} style={linkButtonStyle}>
@@ -503,15 +673,14 @@ function HelpNowBar({ onHelp }: { onHelp: (kind: "self_harm" | "in_danger") => v
   );
 }
 
-// Region -> country -> general emergency number picker, embedded directly in
-// the self-harm/in-danger result. findahelpline.com (above) stays the
-// primary, actively-maintained pointer; this is a secondary option for
-// someone who needs a local emergency line right now. Every entry was
-// cross-checked against a stable source as of the date shown (see
-// src/lib/emergencyNumbers.ts) - any future entry added without a
-// verification pass carries its own "not yet independently verified" note
-// instead, per that file's `lastVerified` convention.
-function EmergencyNumbersPicker() {
+// Region -> country -> general emergency number picker. Used standalone at
+// /emergency-numbers and embedded in the serious pathway (self_harm: a
+// secondary reference below findahelpline.com; in_danger: the primary,
+// lead block, since that pathway's whole point is "you may need this
+// number right now" — see SeriousCard). Every entry was cross-checked
+// against a stable source as of the date shown (see
+// src/lib/emergencyNumbers.ts).
+function EmergencyNumbersPicker({ title = "Local emergency number" }: { title?: string }) {
   const [regionIndex, setRegionIndex] = useState<number | null>(null);
   const [countryIndex, setCountryIndex] = useState<number | null>(null);
 
@@ -521,18 +690,14 @@ function EmergencyNumbersPicker() {
   return (
     <div
       style={{
-        margin: "20px 0",
-        padding: 16,
-        border: "1px solid #c9c2a6",
-        borderRadius: 8,
-        background: "#f0ece0",
+        margin: "16px 0",
+        padding: 18,
+        border: "1px solid var(--color-calm-border)",
+        borderRadius: "var(--radius-md)",
+        background: "var(--color-calm-surface)",
       }}
     >
-      <p style={{ margin: "0 0 4px", fontWeight: 600, color: "#3f473f" }}>Local emergency number</p>
-      <p style={{ margin: "0 0 10px", fontSize: 13, color: "#7a7259" }}>
-        findahelpline.com (the link above) stays the primary, actively maintained option; this is a
-        secondary reference.
-      </p>
+      <p style={{ margin: "0 0 12px", fontSize: 13, fontWeight: 700, color: "var(--color-calm-accent2)" }}>{title}</p>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <select
           value={regionIndex ?? ""}
@@ -540,7 +705,8 @@ function EmergencyNumbersPicker() {
             setRegionIndex(e.target.value === "" ? null : Number(e.target.value));
             setCountryIndex(null);
           }}
-          style={{ padding: 6, fontSize: 14 }}
+          className="trant-field"
+          style={{ width: "auto", flex: "1 1 150px" }}
         >
           <option value="">Region</option>
           {EMERGENCY_NUMBERS.map((r, i) => (
@@ -553,7 +719,8 @@ function EmergencyNumbersPicker() {
           <select
             value={countryIndex ?? ""}
             onChange={(e) => setCountryIndex(e.target.value === "" ? null : Number(e.target.value))}
-            style={{ padding: 6, fontSize: 14 }}
+            className="trant-field"
+            style={{ width: "auto", flex: "1 1 150px" }}
           >
             <option value="">Country</option>
             {region.countries.map((c, i) => (
@@ -565,25 +732,198 @@ function EmergencyNumbersPicker() {
         )}
       </div>
       {entry && (
-        <div style={{ marginTop: 10 }}>
+        <div style={{ marginTop: 14 }}>
           <p style={{ margin: 0 }}>
-            <span style={{ fontSize: 26, fontWeight: 700, color: "#3f473f" }}>{entry.number}</span>
-            {entry.note && <span style={{ marginLeft: 8, fontSize: 13, color: "#7a7259" }}>{entry.note}</span>}
+            <span style={{ fontSize: 30, fontWeight: 800, color: "var(--color-calm-text)" }}>{entry.number}</span>
+            {entry.note && <span style={{ marginLeft: 8, fontSize: 13, color: "var(--color-text-soft)" }}>{entry.note}</span>}
           </p>
           {entry.helplines && entry.helplines.length > 0 && (
-            <ul style={{ margin: "6px 0 0", padding: 0, listStyle: "none", fontSize: 12, color: "#8a8265" }}>
+            <ul style={{ margin: "8px 0 0", padding: 0, listStyle: "none", fontSize: 12.5, color: "var(--color-text-soft)", display: "grid", gap: 3 }}>
               {entry.helplines.map((h) => (
                 <li key={h.label}>
-                  {h.label}: {h.number}
+                  {h.label}: <strong>{h.number}</strong>
                 </li>
               ))}
             </ul>
           )}
-          <p style={{ margin: "6px 0 0", fontSize: 11, color: entry.lastVerified ? "#6b8f71" : "#b06a00" }}>
+          <p style={{ margin: "8px 0 0", fontSize: 11.5, color: entry.lastVerified ? "#5c8a5c" : "#b06a00" }}>
             {entry.lastVerified ? `Last verified: ${entry.lastVerified}` : "Not yet independently verified"}
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+function ResourceLink({ url }: { url: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ display: "inline-block", fontSize: 17, fontWeight: 700, color: "var(--color-calm-accent2)" }}
+    >
+      {url.replace(/^https?:\/\//, "")} ↗
+    </a>
+  );
+}
+
+// Turns a plain-text mention of "findahelpline.com" into a real clickable
+// link wherever it appears inside a body paragraph, instead of leaving it
+// as inert text the reader has to copy out themselves.
+function linkifyFindAHelpline(text: string): React.ReactNode {
+  const parts = text.split(/(findahelpline\.com)/);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) =>
+    part === "findahelpline.com" ? (
+      <a
+        key={i}
+        href={SERIOUS_RESOURCE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: "var(--color-calm-accent2)", fontWeight: 700, textDecoration: "underline" }}
+      >
+        {part}
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
+
+function SeriousSection({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        margin: "16px 0",
+        padding: 18,
+        borderRadius: "var(--radius-md)",
+        background: "var(--color-calm-surface)",
+        border: "1px solid var(--color-calm-border)",
+      }}
+    >
+      <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 700, color: "var(--color-calm-accent2)" }}>{label}</p>
+      {children}
+    </div>
+  );
+}
+
+// The self-harm/in-danger response, redesigned 2026-08-19: a single
+// elevated card (soft shadow, generous spacing) rather than a flat block,
+// and the rest of the page's chrome disappears while this shows (see
+// isSerious in Home()) so it's the only thing competing for attention.
+// `kind` branches the layout: self_harm keeps the original
+// message -> resource -> local numbers -> "things that helped" order;
+// in_danger leads with local emergency numbers (the immediate-danger case)
+// and treats findahelpline.com as the second, clearly-separate option for
+// emotional harm without immediate danger — see t-rant-phase2-brief.md's
+// original design and the 2026-08-19 redesign note in selfHarmContent.ts.
+// Full-viewport modal: a solid calm-toned backdrop (deliberately not a
+// translucent dim over the site's normal warm palette - this state is
+// meant to feel like a different, kinder place entirely, not the same page
+// with the lights turned down) that closes on click-outside or Escape, in
+// addition to the explicit "Back to T-Rant" button - three ways out, none
+// of them hidden.
+function SeriousCard({
+  result,
+  onReset,
+}: {
+  result: Extract<RantResponse, { pathway: "serious" }>;
+  onReset: () => void;
+}) {
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onReset();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onReset]);
+
+  return (
+    <div
+      role="presentation"
+      onClick={onReset}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 100,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflowY: "auto",
+        padding: "40px 20px",
+        background: "radial-gradient(circle at 28% 18%, #f7f2e6, #eef1ea 55%, #e7edec 100%)",
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={result.kind === "self_harm" ? "You're not alone in this" : "Getting you to real help"}
+        onClick={(e) => e.stopPropagation()}
+        className="trant-fade-in"
+        style={{
+          width: "100%",
+          maxWidth: 640,
+          margin: "auto",
+          padding: "36px 32px",
+          borderRadius: "var(--radius-lg)",
+          background: "var(--color-calm-surface)",
+          border: "1px solid var(--color-calm-border)",
+          boxShadow: "var(--shadow-lg)",
+        }}
+      >
+      <p
+        style={{
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+          color: "var(--color-calm-accent)",
+          marginBottom: 18,
+        }}
+      >
+        {result.kind === "self_harm" ? "You're not alone in this" : "Getting you to real help"}
+      </p>
+
+      {result.message.split("\n\n").map((para, i) => (
+        <p key={i} style={{ lineHeight: 1.75, marginBottom: 16, color: "var(--color-calm-text)", fontSize: 15.5 }}>
+          {linkifyFindAHelpline(para)}
+        </p>
+      ))}
+
+      {result.kind === "in_danger" && result.inDanger ? (
+        <>
+          <p style={{ margin: "0 0 10px", fontWeight: 600, color: "var(--color-calm-text)", fontSize: 14.5, lineHeight: 1.6 }}>
+            {result.inDanger.physicalNote}
+          </p>
+          <EmergencyNumbersPicker title="Local emergency number" />
+
+          <SeriousSection label="Being hurt or controlled, without immediate danger?">
+            <p style={{ margin: "0 0 12px", fontSize: 14.5, lineHeight: 1.6, color: "var(--color-calm-text)" }}>
+              {linkifyFindAHelpline(result.inDanger.emotionalNote)}
+            </p>
+            <ResourceLink url={result.resourceUrl} />
+          </SeriousSection>
+        </>
+      ) : (
+        <>
+          <SeriousSection label="Real help, right now">
+            <ResourceLink url={result.resourceUrl} />
+            {result.emergencyNote && (
+              <p style={{ margin: "12px 0 0", color: "var(--color-calm-text)", fontSize: 14 }}>{result.emergencyNote}</p>
+            )}
+          </SeriousSection>
+          <EmergencyNumbersPicker />
+          {result.helpfulThings && result.helpfulThings.length > 0 && <HelpfulThingsList items={result.helpfulThings} />}
+        </>
+      )}
+
+      {result.flagged.originalText.trim() !== "" && <FlaggedBlock flagged={result.flagged} />}
+
+      <button type="button" onClick={onReset} className="trant-btn trant-btn-ghost" style={{ marginTop: 26, padding: "8px 4px" }}>
+        ← Back to T-Rant
+      </button>
+      </div>
     </div>
   );
 }
@@ -605,50 +945,6 @@ function ResultView({
         <div>
           <p>{result.message}</p>
           <FlaggedBlock flagged={result.flagged} />
-        </div>
-      );
-
-    case "serious":
-      // Calming palette per t-rant-safety-legal-update.md section 1: muted
-      // sage/moss green and soft blue, warm beige rather than stark white,
-      // nothing bright or saturated, no celebratory elements. There's no
-      // pixel mascot built yet, so "no mascot on this screen" is already
-      // true by default.
-      return (
-        <div
-          style={{
-            margin: "20px 0",
-            padding: 24,
-            borderRadius: 12,
-            background: "#f5f0e6",
-          }}
-        >
-          {result.message.split("\n\n").map((para, i) => (
-            <p key={i} style={{ lineHeight: 1.6, marginBottom: 16, color: "#3f473f" }}>
-              {para}
-            </p>
-          ))}
-          <div
-            style={{
-              margin: "20px 0",
-              padding: 16,
-              border: "2px solid #6b8f71",
-              borderRadius: 8,
-              background: "#eef3ee",
-            }}
-          >
-            <p style={{ margin: "0 0 8px", fontWeight: 600 }}>
-              <a href={result.resourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#4a7a94" }}>
-                {result.resourceUrl}
-              </a>
-            </p>
-            <p style={{ margin: 0, color: "#3f473f" }}>{result.emergencyNote}</p>
-          </div>
-          <EmergencyNumbersPicker />
-          {result.helpfulThings && result.helpfulThings.length > 0 && (
-            <HelpfulThingsList items={result.helpfulThings} />
-          )}
-          {result.flagged.originalText.trim() !== "" && <FlaggedBlock flagged={result.flagged} />}
         </div>
       );
 
@@ -753,36 +1049,48 @@ function CleanResultView({
 
       <DirectorsCut text={result.directorsCut} />
 
-      <div style={{ marginTop: 20, fontSize: 14 }}>
-        <p style={{ marginBottom: 6, color: "#555" }}>Try a persona (just for fun):</p>
-        {PERSONAS.map((p) => (
-          <button
-            key={p}
-            type="button"
-            onClick={() => requestPersona(p)}
-            disabled={personaLoading !== null}
-            style={{ marginRight: 6, marginBottom: 6 }}
-          >
-            {personaLoading === p ? "..." : PERSONA_LABELS[p]}
-          </button>
-        ))}
-        {personaError && <p style={{ color: "crimson" }}>{personaError}</p>}
+      <div style={{ marginTop: 24, fontSize: 14 }}>
+        <p style={{ marginBottom: 8, color: "var(--color-text-soft)" }}>Try a persona (just for fun):</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {PERSONAS.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => requestPersona(p)}
+              disabled={personaLoading !== null}
+              className="trant-btn trant-btn-secondary"
+            >
+              {personaLoading === p ? "..." : PERSONA_LABELS[p]}
+            </button>
+          ))}
+        </div>
+        {personaError && <p style={{ color: "#b3453a", marginTop: 8 }}>{personaError}</p>}
         {personaText && persona && (
-          <div style={{ marginTop: 8, padding: 12, border: "1px solid #ddd", borderRadius: 6, background: "#fafafa" }}>
-            <p style={{ margin: "0 0 4px", fontWeight: 600 }}>{PERSONA_LABELS[persona]}</p>
+          <div
+            style={{
+              marginTop: 10,
+              padding: 14,
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--radius-sm)",
+              background: "var(--color-surface-muted)",
+            }}
+          >
+            <p style={{ margin: "0 0 6px", fontWeight: 600 }}>{PERSONA_LABELS[persona]}</p>
             <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{personaText}</p>
           </div>
         )}
       </div>
 
-      <div style={{ marginTop: 20, fontSize: 14 }}>
-        <button type="button" onClick={shareOnX} style={{ marginRight: 8 }}>
-          Share on X
-        </button>
-        <button type="button" onClick={copyShareLink}>
-          {copied ? "Link copied!" : "Copy shareable link"}
-        </button>
-        <p style={{ fontSize: 12, color: "#888", marginTop: 4 }}>
+      <div style={{ marginTop: 24, fontSize: 14 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <button type="button" onClick={shareOnX} className="trant-btn trant-btn-secondary">
+            Share on X
+          </button>
+          <button type="button" onClick={copyShareLink} className="trant-btn trant-btn-secondary">
+            {copied ? "Link copied!" : "Copy shareable link"}
+          </button>
+        </div>
+        <p style={{ fontSize: 12, color: "var(--color-text-faint)", marginTop: 8 }}>
           Only the rewritten output goes in the link, never your original draft.
         </p>
       </div>
@@ -794,7 +1102,7 @@ function CleanResultView({
 // feature, see t-rant-phase2-brief.md section 8.
 function ExplanationCaption({ text }: { text: string }) {
   if (!text) return null;
-  return <p style={{ margin: "-8px 0 12px", fontSize: 12.5, color: "#888", fontStyle: "italic" }}>{text}</p>;
+  return <p style={{ margin: "-6px 0 12px", fontSize: 12.5, color: "var(--color-text-faint)", fontStyle: "italic" }}>{text}</p>;
 }
 
 // Director's Cut - a fourth, maximally-unfiltered version, explicitly for
@@ -808,12 +1116,12 @@ function DirectorsCut({ text }: { text: string }) {
   if (!text) return null;
 
   return (
-    <div style={{ marginTop: 24, padding: 12, border: "1px dashed #aaa", borderRadius: 6 }}>
+    <div style={{ marginTop: 26, padding: 14, border: "1px dashed var(--color-border-strong)", borderRadius: "var(--radius-sm)" }}>
       {!revealed ? (
         <button
           type="button"
           onClick={() => setRevealed(true)}
-          style={{ all: "unset", cursor: "pointer", fontSize: 13, color: "#888", textDecoration: "underline" }}
+          style={{ all: "unset", cursor: "pointer", fontSize: 13, color: "var(--color-text-faint)", textDecoration: "underline" }}
         >
           🔒 Show Director&apos;s Cut - for your eyes only, don&apos;t send this
         </button>
@@ -831,16 +1139,16 @@ function DirectorsCut({ text }: { text: string }) {
 
 function IntensityGauge({ intensity }: { intensity: number }) {
   return (
-    <div style={{ marginBottom: 16 }}>
-      <p style={{ margin: "0 0 4px", fontSize: 13, color: "#555" }}>
+    <div style={{ marginBottom: 18 }}>
+      <p style={{ margin: "0 0 4px", fontSize: 13, color: "var(--color-text-soft)" }}>
         Rant Intensity: {intensity}/10
       </p>
-      <div style={{ height: 10, background: "#eee", borderRadius: 5, overflow: "hidden", maxWidth: 240 }}>
+      <div style={{ height: 10, background: "var(--color-border)", borderRadius: 5, overflow: "hidden", maxWidth: 240 }}>
         <div
           style={{
             height: "100%",
             width: `${(intensity / 10) * 100}%`,
-            background: intensity > 7 ? "#c0392b" : intensity > 4 ? "#e67e22" : "#7fa77f",
+            background: intensity > 7 ? "#c0392b" : intensity > 4 ? "#e67e22" : "var(--color-sage)",
           }}
         />
       </div>
@@ -850,16 +1158,16 @@ function IntensityGauge({ intensity }: { intensity: number }) {
 
 function SharedView({ data, onDismiss }: { data: SharedPayload; onDismiss: () => void }) {
   return (
-    <main style={{ maxWidth: 640, margin: "40px auto", padding: "0 16px", fontFamily: "sans-serif" }}>
-      <p style={{ fontSize: 14, color: "#555" }}>Someone shared a T-Rant result with you.</p>
+    <main style={{ maxWidth: 640, margin: "0 auto", padding: "48px 28px" }}>
+      <p style={{ fontSize: 14, color: "var(--color-text-soft)" }}>Someone shared a T-Rant result with you.</p>
       <IntensityGauge intensity={data.intensity} />
-      <h2>Still You, Just Cooler</h2>
+      <h2 style={{ fontSize: 17, fontWeight: 700, marginTop: 18 }}>Still You, Just Cooler</h2>
       <p>{data.versions.stillYouJustCooler}</p>
-      <h2>Professional & Clear</h2>
+      <h2 style={{ fontSize: 17, fontWeight: 700, marginTop: 18 }}>Professional & Clear</h2>
       <p>{data.versions.professionalClear}</p>
-      <h2>Maximum Diplomacy</h2>
+      <h2 style={{ fontSize: 17, fontWeight: 700, marginTop: 18 }}>Maximum Diplomacy</h2>
       <p>{data.versions.maximumDiplomacy}</p>
-      <button type="button" onClick={onDismiss} style={{ marginTop: 16 }}>
+      <button type="button" onClick={onDismiss} className="trant-btn trant-btn-primary" style={{ marginTop: 20 }}>
         Try it yourself
       </button>
     </main>
@@ -877,21 +1185,21 @@ function HelpfulThingsList({ items }: { items: HelpfulThing[] }) {
       style={{
         marginTop: 16,
         paddingLeft: 16,
-        borderLeft: "3px solid #b9c9b0",
+        borderLeft: "3px solid var(--color-calm-border)",
         fontSize: 14,
-        color: "#5c6355",
+        color: "var(--color-calm-text)",
       }}
     >
       <p style={{ marginBottom: 8 }}>A few things that helped me:</p>
       <ul style={{ paddingLeft: 20, listStyle: "none", marginLeft: 0 }}>
         {items.map((item, i) => (
           <li key={i} style={{ marginBottom: 8, fontStyle: item.optional ? "italic" : "normal" }}>
-            {item.optional && <strong>- </strong>}
+            {item.optional && <strong style={{ color: "var(--color-calm-accent)" }}>- </strong>}
             {item.title && (
               <>
                 {item.emphasizeFirstLetter ? (
                   <>
-                    <strong style={{ color: "#4a5544" }}>{item.title[0]}</strong>
+                    <strong style={{ color: "var(--color-calm-accent)" }}>{item.title[0]}</strong>
                     <strong>{item.title.slice(1)}</strong>
                   </>
                 ) : (
@@ -914,18 +1222,18 @@ function FlaggedBlock({ flagged }: { flagged: FlaggedInfo }) {
   return (
     <div
       style={{
-        marginTop: 12,
-        padding: 12,
-        border: "1px solid #ddd",
-        borderRadius: 6,
-        background: "#fafafa",
+        marginTop: 14,
+        padding: 14,
+        border: "1px solid var(--color-border)",
+        borderRadius: "var(--radius-sm)",
+        background: "var(--color-surface-muted)",
       }}
     >
       <p style={{ margin: "0 0 8px", whiteSpace: "pre-wrap" }}>
         {highlightFlagged(flagged.originalText, flagged.flaggedPhrases)}
       </p>
       {flagged.reason && (
-        <p style={{ margin: 0, fontSize: 14, color: "#555" }}>{flagged.reason}</p>
+        <p style={{ margin: 0, fontSize: 14, color: "var(--color-text-soft)" }}>{flagged.reason}</p>
       )}
     </div>
   );
@@ -950,25 +1258,17 @@ function highlightFlagged(text: string, phrases: string[]) {
   );
 }
 
-// A curated set of links to step away with, per
-// t-rant-safety-legal-update.md section 5. Not shown after the "serious"
-// pathway — that state stays deliberately sparse, no distractions.
-const UNWIND_LINKS = [
-  { emoji: "🕹️", label: "Tetris", tag: "Stack blocks, not grudges.", href: "https://tetris.com" },
-  { emoji: "🦦", label: "explore.org", tag: "Live animal cams. Zero drama, all whiskers.", href: "https://explore.org" },
-  { emoji: "😻", label: "r/aww", tag: "Scroll until your blood pressure forgives you.", href: "https://reddit.com/r/aww" },
-  { emoji: "🎲", label: "The Useless Web", tag: "One button, zero purpose, somehow it helps.", href: "https://theuselessweb.com" },
-  { emoji: "🧩", label: "2048", tag: "Swap one puzzle for a smaller, friendlier one.", href: "https://play2048.co" },
-];
-
 function UnwindLinks() {
   return (
-    <section style={{ marginTop: 32 }}>
-      <p style={{ fontSize: 13, color: "#777", fontStyle: "italic" }}>
+    <section style={{ marginTop: 36 }}>
+      <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--color-text)" }}>
+        🦖 Rex-commended: a few minutes of doing absolutely nothing productive
+      </h2>
+      <p style={{ marginTop: 6, fontSize: 13, color: "var(--color-text-faint)", fontStyle: "italic" }}>
         You're leaving T-Rant territory: everything past this point is somebody else's swamp, we
         don't control it, vouch for it, or get a cut of your afternoon. Wander at your own risk.
       </p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
         {UNWIND_LINKS.map((link) => (
           <a
             key={link.href}
@@ -977,16 +1277,17 @@ function UnwindLinks() {
             rel="noopener noreferrer"
             style={{
               display: "block",
-              padding: "8px 12px",
-              border: "1px solid #ddd",
-              borderRadius: 6,
+              padding: "10px 14px",
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--radius-sm)",
               textDecoration: "none",
-              color: "#333",
+              color: "var(--color-text)",
               fontSize: 13,
+              background: "var(--color-surface)",
             }}
           >
             <div>{link.emoji} {link.label}</div>
-            <div style={{ color: "#888", fontSize: 12 }}>{link.tag}</div>
+            <div style={{ color: "var(--color-text-faint)", fontSize: 12 }}>{link.tag}</div>
           </a>
         ))}
       </div>
@@ -994,30 +1295,63 @@ function UnwindLinks() {
   );
 }
 
+// Reformatted 2026-08-19 for readability: a short heading, three trust
+// bullets up front (the promise, at a glance), then the fuller paragraphs
+// with more breathing room. The link to House Rules used to live here too;
+// it's now in the persistent sidebar nav instead, so it isn't repeated.
 function PrivacyNotice() {
+  const badges = ["No accounts", "No stored rants", "No tracking"];
   return (
-    <section style={{ marginTop: 40, paddingTop: 16, borderTop: "1px solid #eee", fontSize: 13, color: "#555" }}>
-      <p>
-        No accounts, no stored rants, no tracking. All responses are generated using Anthropic&apos;s API,
-        which (at the time this site launched) does not use API inputs to train their models. Policies
-        can change; for the most current information, see{" "}
-        <a href={ANTHROPIC_TRAINING_POLICY_URL} target="_blank" rel="noopener noreferrer">
-          Anthropic&apos;s data usage policy
-        </a>
-        .
-      </p>
-      <p>
-        Don&apos;t take our word for it: the code that decides what gets saved is public. Open the{" "}
-        <a href={GITHUB_LOGGING_CODE_URL} target="_blank" rel="noopener noreferrer">
-          <code>src/lib</code> folder
-        </a>{" "}
-        on GitHub and look at the logging code yourself. You don&apos;t need to read code to get the
-        point: there&apos;s no hidden file, database, or service where your rant text goes. What you see
-        in that folder is everything.
-      </p>
-      <p>
-        Full breakdown of tones, flagging categories, and usage limits: <Link href="/house-rules">House Rules</Link>.
-      </p>
+    <section style={{ marginTop: 56, paddingTop: 26, borderTop: "1px solid var(--color-border)" }}>
+      <h2
+        style={{
+          fontSize: 12.5,
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+          color: "var(--color-text-faint)",
+          marginBottom: 14,
+        }}
+      >
+        Privacy, in plain terms
+      </h2>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
+        {badges.map((b) => (
+          <span
+            key={b}
+            style={{
+              fontSize: 12.5,
+              fontWeight: 600,
+              padding: "5px 12px",
+              borderRadius: 999,
+              background: "var(--color-sage-soft)",
+              color: "#3f473f",
+            }}
+          >
+            {b}
+          </span>
+        ))}
+      </div>
+      <div style={{ display: "grid", gap: 14, fontSize: 13.5, color: "var(--color-text-soft)", lineHeight: 1.7, maxWidth: 600 }}>
+        <p>
+          All responses are generated using Anthropic&apos;s API, which (at the time this site launched)
+          does not use API inputs to train their models. Policies can change; for the most current
+          information, see{" "}
+          <a href={ANTHROPIC_TRAINING_POLICY_URL} target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-link)", textDecoration: "underline" }}>
+            Anthropic&apos;s data usage policy
+          </a>
+          .
+        </p>
+        <p>
+          Don&apos;t take our word for it: the code that decides what gets saved is public. Open the{" "}
+          <a href={GITHUB_LOGGING_CODE_URL} target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-link)", textDecoration: "underline" }}>
+            <code>src/lib</code> folder
+          </a>{" "}
+          on GitHub and look at the logging code yourself. You don&apos;t need to read code to get the
+          point: there&apos;s no hidden file, database, or service where your rant text goes. What you see
+          in that folder is everything.
+        </p>
+      </div>
     </section>
   );
 }

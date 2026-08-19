@@ -35,39 +35,54 @@ const FAKE_FEATURES = [
 
 export default function DarkPatterns() {
   return (
-    <main style={{ maxWidth: 640, margin: "40px auto", padding: "0 16px", fontFamily: "sans-serif" }}>
-      <p>
-        <Link href="/">&larr; Back to T-Rant</Link>
+    <main style={{ maxWidth: 640, margin: "0 auto", padding: "48px 28px 64px" }}>
+      <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em" }}>The Dark Pattern Audit</h1>
+      <p style={{ marginTop: 12, color: "var(--color-text-soft)", lineHeight: 1.6 }}>
+        A mockup of how a typical app would monetize a tool exactly like this one.
       </p>
-      <h1>The Dark Pattern Audit</h1>
-      <p>
-        A mockup of how a typical app would monetize a tool exactly like this one. Nothing on this page
-        is real, implemented, or planned. It exists as a receipt: if any of this ever shows up on the
-        actual site, something has gone wrong and you should say so.
+      <p
+        style={{
+          marginTop: 14,
+          padding: "12px 16px",
+          borderRadius: "var(--radius-sm)",
+          background: "var(--color-accent-soft)",
+          border: "1px solid var(--color-border-strong)",
+          fontWeight: 700,
+          color: "var(--color-text)",
+        }}
+      >
+        ⚠️ Nothing on this page is real, implemented, or planned.
+      </p>
+      <p style={{ marginTop: 14, color: "var(--color-text-soft)", lineHeight: 1.6 }}>
+        It exists as a receipt: if any of this ever shows up on the actual site, something has gone
+        wrong and you should say so.
       </p>
 
       {FAKE_FEATURES.map((f) => (
         <div
           key={f.title}
           style={{
-            marginTop: 20,
+            marginTop: 16,
             padding: 16,
-            border: "1px dashed #bbb",
-            borderRadius: 8,
-            background: "#fafafa",
+            border: "1px dashed var(--color-border-strong)",
+            borderRadius: "var(--radius-sm)",
+            background: "var(--color-surface-muted)",
             opacity: 0.85,
           }}
         >
           <p style={{ margin: "0 0 4px", fontWeight: 600 }}>
-            {f.title} <span style={{ fontWeight: 400, color: "#888" }}>({f.price})</span>
+            {f.title} <span style={{ fontWeight: 400, color: "var(--color-text-faint)" }}>({f.price})</span>
           </p>
-          <p style={{ margin: 0, color: "#555" }}>{f.body}</p>
+          <p style={{ margin: 0, color: "var(--color-text-soft)" }}>{f.body}</p>
         </div>
       ))}
 
-      <p style={{ marginTop: 32, fontSize: 14, color: "#555" }}>
+      <p style={{ marginTop: 32, fontSize: 14, color: "var(--color-text-soft)" }}>
         The real, current promise is on the{" "}
-        <Link href="/house-rules">House Rules</Link> page, under "What we'll never add."
+        <Link href="/house-rules" style={{ color: "var(--color-link)", textDecoration: "underline" }}>
+          House Rules
+        </Link>{" "}
+        page, under "What we'll never add."
       </p>
     </main>
   );

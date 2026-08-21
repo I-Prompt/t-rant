@@ -1659,7 +1659,7 @@ function CleanResultView({
         {personasOpen ? (
           <>
             <p style={{ marginBottom: 8, color: "var(--color-text-soft)" }}>Try a persona (just for fun):</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {PERSONAS.map((p) => (
                 <button
                   key={p}
@@ -1667,7 +1667,7 @@ function CleanResultView({
                   onClick={() => previewPersonaClick(p)}
                   disabled={personaLoading.includes(p)}
                   className="trant-btn trant-btn-secondary"
-                  style={{ whiteSpace: "nowrap", fontSize: 13, padding: "8px 16px" }}
+                  style={{ whiteSpace: "nowrap", fontSize: 12, padding: "6px 11px" }}
                 >
                   {personaLoading.includes(p) ? "..." : PERSONA_LABELS[p]}
                 </button>

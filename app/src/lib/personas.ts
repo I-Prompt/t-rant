@@ -18,7 +18,7 @@ const PERSONA_INSTRUCTIONS: Record<Persona, string> = {
   haiku:
     "Rewrite the core sentiment as a single haiku (5-7-5 syllable structure). Capture the emotional core, not a literal line-by-line translation.",
   nature_documentary:
-    "Rewrite it as a calm, observational nature-documentary narration (David Attenborough style) describing the person's situation as if narrating wildlife behavior: third person, scientific-sounding, but funny. Preserve the actual complaint.",
+    "Rewrite it as a calm, observational nature-documentary narration (David Attenborough style): the specimen being observed and narrated is whoever the complaint is ABOUT - the other person's behavior that prompted the rant - not the sender. The sender narrates as the documentarian, never the subject. Describe the other person's specific behavior as if narrating wildlife (e.g. a colleague who won't stop interrupting becomes 'a creature that has not yet learned to wait its turn'), third person, scientific-sounding, but funny. Preserve the actual complaint and its specific details - this only changes who's being watched and how, not what happened.",
 };
 
 function systemPromptFor(persona: Persona): string {

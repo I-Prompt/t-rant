@@ -251,7 +251,11 @@ const PERSONA_MOCK_WRAPPER: Record<Persona, (body: string) => string> = {
   victorian: (b) => `Dearest reader, I must with great formality convey the following: ${b}`,
   cease_and_desist: (b) => `Be advised: the undersigned hereby raises the following matter: ${b}`,
   haiku: (b) => b,
-  nature_documentary: (b) => `Here, in its natural habitat, the aggrieved worker is observed to say: ${b}`,
+  // Mock can't tell who the complaint is about (no real comprehension, see
+  // the file header) so it can't point the "observed" framing at the other
+  // person the way the real generator does - deliberately left ambiguous
+  // rather than actively mislabeling the sender as the specimen.
+  nature_documentary: (b) => `Here, in the wild, a curious specimen is observed: ${b}`,
 };
 
 export function mockGeneratePersonaVersion(text: string, persona: Persona): string {

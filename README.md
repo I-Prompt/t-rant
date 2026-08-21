@@ -2,6 +2,8 @@
 
 **They probably deserved it.**
 
+Live at [t-rant.vercel.app](https://t-rant.vercel.app/).
+
 Paste a heated draft message - a Slack rant, an angry email - and get back three versions at different diplomacy levels, so you can pick one and actually send it instead of the original.
 
 "Angry message → professional rewrite" tools already exist (Angry Email Translator, Anger Translator, AI Corporate Translator, among others). What's different here is two things: a guardrail architecture with dedicated, isolated safety classification, not three prompt variations bolted onto an unguarded text box, and a deliberate bet on **provable transparency** over "trust us": every block shows you exactly what tripped it, in your own words.
@@ -131,7 +133,9 @@ The pipeline, safety architecture, transparency features, multilingual support, 
 
 **2026-08-21 pass:** dark mode with a full token palette and persisted/system-detected theme; a Gmail-style compact/comfortable density toggle; stealth mode (disguises the page as a generic "Notes" app, session-only, never persisted); reader mode (`?reader=1`, bare textarea + result, no chrome); sidebar reordered (Unwind Links, House Rules, Dark Pattern Audit, then a divider, then Emergency Numbers and the Bookmarklet) with an emoji on every link and the old House-Rules highlight background removed; a shorter default result view (collapsed behind "Show my rewrite," Professional & Clear only until expanded, personas behind "More tones," unwind links/privacy footer behind "Learn more"); the writing-guidance callout now collapses after first use and can be manually re-collapsed; auto-growing textarea; auto-scroll to the result; a dismissible "rant haiku of the day" in the sidebar (home page only); a confetti burst, randomized branded-card caption, copy-stamp animation, page-load curtain transition, and sticky "back to top" mini-header past the fold; three new sound effects (hero-click roar, clean-result success chime, loading-message tick); Wordle added to the unwind links; tagline changed to "They probably deserved it." None of this touches the self-harm/in-danger pathway.
 
-**Planned:** a *human* native-speaker review pass on the non-English self-harm/quote translations (a Claude review pass on 2026-08-17 found no issues, but isn't a substitute for one - see "Multilingual support" above), and deploying to Vercel.
+**Deployed:** live at [t-rant.vercel.app](https://t-rant.vercel.app/), auto-deploying from `origin/master`.
+
+**Planned:** a *human* native-speaker review pass on the non-English self-harm/quote translations (a Claude review pass on 2026-08-17 found no issues, but isn't a substitute for one - see "Multilingual support" above).
 
 Full spec: [`t-rant-MASTER-BUILD-BRIEF.md`](t-rant-MASTER-BUILD-BRIEF.md), [`t-rant-technical-spec.md`](t-rant-technical-spec.md), [`t-rant-safety-legal-update.md`](t-rant-safety-legal-update.md), [`t-rant-quotes-by-category.md`](t-rant-quotes-by-category.md), [`t-rant-phase2-brief.md`](t-rant-phase2-brief.md).
 

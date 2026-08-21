@@ -1134,6 +1134,7 @@ function ShareCheckbox({ label, checked, onChange }: { label: string; checked: b
         alignItems: "center",
         gap: 6,
         fontSize: 13,
+        whiteSpace: "nowrap",
         padding: "6px 10px",
         border: "1px solid var(--color-border)",
         borderRadius: "var(--radius-sm)",
@@ -1666,6 +1667,7 @@ function CleanResultView({
                   onClick={() => previewPersonaClick(p)}
                   disabled={personaLoading.includes(p)}
                   className="trant-btn trant-btn-secondary"
+                  style={{ whiteSpace: "nowrap", fontSize: 13, padding: "8px 16px" }}
                 >
                   {personaLoading.includes(p) ? "..." : PERSONA_LABELS[p]}
                 </button>

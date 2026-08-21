@@ -58,3 +58,28 @@ export function playToneBlip(ctx: AudioContext, tone: ToneKey) {
     beep(ctx, 523, 0.16, 0, 0.07);
   }
 }
+
+// Hero-sprite click, a little three-note roar - purely a mascot easter egg,
+// only ever wired to the idle hero Rex (never shown/clickable in stealth,
+// where the sprite itself is hidden).
+export function playRoar(ctx: AudioContext) {
+  beep(ctx, 180, 0.09, 0, 0.13);
+  beep(ctx, 260, 0.09, 0.08, 0.13);
+  beep(ctx, 200, 0.15, 0.16, 0.11);
+}
+
+// Clean-result arrival - an upbeat ascending triad, pairs with the confetti
+// burst in page.tsx. Never plays for hard_no/firm/witty/serious - each of
+// those already has its own distinct cue (or, for hard_no/serious, none).
+export function playSuccessChime(ctx: AudioContext) {
+  beep(ctx, 440, 0.09, 0, 0.09);
+  beep(ctx, 554, 0.09, 0.08, 0.09);
+  beep(ctx, 659, 0.15, 0.16, 0.09);
+}
+
+// Soft tick synced to the rotating loading-state message, so the copy
+// change reads as intentional rather than a silent flicker. Deliberately
+// quiet - it repeats every ~1.4s while a request is in flight.
+export function playLoadingTick(ctx: AudioContext) {
+  beep(ctx, 300, 0.04, 0, 0.05);
+}

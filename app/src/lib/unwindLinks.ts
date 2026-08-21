@@ -16,4 +16,5 @@ export const UNWIND_LINKS: UnwindLink[] = [
   { emoji: "😻", label: "r/aww", tag: "Scroll until your blood pressure forgives you.", href: "https://reddit.com/r/aww" },
   { emoji: "🎲", label: "The Useless Web", tag: "One button, zero purpose, somehow it helps.", href: "https://theuselessweb.com" },
   { emoji: "🧩", label: "2048", tag: "Swap one puzzle for a smaller, friendlier one.", href: "https://play2048.co" },
+  { emoji: "🟩", label: "Wordle", tag: "Five letters, one shot, no witnesses.", href: "https://www.nytimes.com/games/wordle/index.html" },
 ];

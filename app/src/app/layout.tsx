@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import Sidebar from "@/components/Sidebar";
+import { UIStateProvider } from "@/components/UIState";
 import "./globals.css";
 
 // Space Grotesk, not Geist Sans: same "one font everywhere" rule as before
@@ -30,14 +31,25 @@ export const metadata: Metadata = {
   },
 };
 
+// Runs before first paint so the page never flashes light-then-dark (or
+// vice versa) on load. Reads the explicit user choice from localStorage if
+// there is one; otherwise leaves data-theme unset and the
+// prefers-color-scheme media query in globals.css takes over.
+const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("trant-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}}catch(e){}})();`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={spaceGrotesk.variable}>
+    <html lang="en" className={spaceGrotesk.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>
-        <div className="trant-shell">
-          <Sidebar />
-          {children}
-        </div>
+        <UIStateProvider>
+          <div className="trant-shell">
+            <Sidebar />
+            {children}
+          </div>
+        </UIStateProvider>
       </body>
     </html>
   );

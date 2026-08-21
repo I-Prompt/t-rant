@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useUIState } from "@/components/UIState";
 import { EMERGENCY_NUMBERS } from "@/lib/emergencyNumbers";
 import { SELF_HARM_CONTENT, SERIOUS_RESOURCE_URL } from "@/lib/selfHarmContent";
-import { playHardStopTone, playStomp, playToneBlip, playWittyWomp, ToneKey } from "@/lib/sounds";
+import { playHardStopTone, playLoadingTick, playRoar, playStomp, playSuccessChime, playToneBlip, playWittyWomp, ToneKey } from "@/lib/sounds";
 import { getRexCells, REX_GRID_H, REX_GRID_W, RexPose } from "@/lib/rexSprite";
 import { UNWIND_LINKS } from "@/lib/unwindLinks";
 import {
@@ -22,6 +23,40 @@ import {
 } from "@/lib/types";
 
 const MAX_CHARS = 2000;
+const GUIDANCE_SEEN_KEY = "trant-guidance-seen";
+
+// Gmail-style density: two presets for the handful of spacing values that
+// most affect how tall the page feels (most of this file is inline styles,
+// not CSS classes, so this is plain numbers rather than a CSS variable
+// switch). See DensityToggle.tsx / UIState.tsx for where the setting lives.
+const SPACING = {
+  comfortable: { mainPad: "32px 28px 48px", heroGap: 18, heroSize: 76, cardPad: 20, cardMargin: 22, sectionGap: 20 },
+  compact: { mainPad: "18px 24px 32px", heroGap: 12, heroSize: 52, cardPad: 14, cardMargin: 14, sectionGap: 12 },
+} as const;
+
+// Cycles under the submit button while a request is in flight - purely
+// decorative, never shown for the serious pathway (that state doesn't use
+// this loading UI at all - see SeriousCard/showHelpNow, which skip loading
+// entirely).
+const LOADING_MESSAGES = [
+  "Consulting the fossil record...",
+  "Sharpening tiny arms...",
+  "Reticulating splines...",
+  "Warming up the vocal cords...",
+  "Polishing the diplomacy...",
+  "Counting stomps...",
+];
+
+// Randomized bottom-band caption on the branded card, see BrandCard - the
+// top band always reads "🦖 T-Rant" (the actual mark); only this smaller
+// one rotates.
+const BRAND_CAPTIONS = [
+  "they probably deserved it",
+  "no accounts, no regrets",
+  "diplomacy, occasionally",
+  "small arms, big opinions",
+  "rewritten, not repressed",
+];
 
 const ANTHROPIC_TRAINING_POLICY_URL =
   "https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training";
@@ -222,8 +257,30 @@ function AmbientBackground() {
 // Small "how to use this box" callout, right above the textarea. The tool
 // only works if the input reads like the actual message someone would send,
 // not a third-person description of the feeling behind it — worth saying
-// explicitly rather than assuming it's obvious.
-function WritingGuidance() {
+// explicitly rather than assuming it's obvious. Collapses to a one-line
+// reminder after your first submit (remembered locally) - useful once,
+// clutter every time after.
+function WritingGuidance({ collapsed, onExpand, onCollapse }: { collapsed: boolean; onExpand: () => void; onCollapse: () => void }) {
+  if (collapsed) {
+    return (
+      <button
+        type="button"
+        onClick={onExpand}
+        style={{
+          all: "unset",
+          cursor: "pointer",
+          display: "block",
+          marginBottom: 14,
+          fontSize: 12.5,
+          color: "var(--color-text-faint)",
+          textDecoration: "underline",
+        }}
+      >
+        ✍️ Write it like you&apos;d actually send it — tap for the reminder
+      </button>
+    );
+  }
+
   return (
     <div
       style={{
@@ -234,18 +291,29 @@ function WritingGuidance() {
         border: "1px solid var(--color-border)",
       }}
     >
-      <p
-        style={{
-          fontSize: 11.5,
-          fontWeight: 700,
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--color-text-faint)",
-          marginBottom: 10,
-        }}
-      >
-        Write it like you&apos;d actually send it
-      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+        <p
+          style={{
+            fontSize: 11.5,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: "var(--color-text-faint)",
+            marginBottom: 10,
+          }}
+        >
+          Write it like you&apos;d actually send it
+        </p>
+        <button
+          type="button"
+          onClick={onCollapse}
+          aria-label="Hide this reminder"
+          title="Hide this reminder"
+          style={{ all: "unset", cursor: "pointer", fontSize: 13, color: "var(--color-text-faint)", padding: "0 2px" }}
+        >
+          ×
+        </button>
+      </div>
       <div style={{ display: "grid", gap: 8, fontSize: 14 }}>
         <p style={{ color: "var(--color-text-faint)" }}>
           <span style={{ color: "#b3453a", fontWeight: 700 }}>✗</span> &quot;I feel really annoyed that Steve keeps
@@ -284,11 +352,84 @@ export default function Home() {
   const [sharedData, setSharedData] = useState<SharedPayload | null>(null);
   const [easterEgg, setEasterEgg] = useState(false);
   const [mockMode, setMockMode] = useState(false);
+  const [guidanceCollapsed, setGuidanceCollapsed] = useState(false);
+  const [masked, setMasked] = useState(false);
+  const [showMiniHeader, setShowMiniHeader] = useState(false);
+  const [readerMode, setReaderMode] = useState(false);
+  const [curtainVisible, setCurtainVisible] = useState(true);
+  const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
+
+  const { stealth, toggleStealth, density } = useUIState();
+  const spacing = SPACING[density];
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const konamiProgress = useRef(0);
+  const resultRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const isSerious = result?.pathway === "serious";
+
+  // "After first use": once seen, the writing-guidance callout stays
+  // collapsed on future visits too, remembered locally.
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(GUIDANCE_SEEN_KEY) === "true") setGuidanceCollapsed(true);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  function markGuidanceSeen() {
+    setGuidanceCollapsed(true);
+    try {
+      localStorage.setItem(GUIDANCE_SEEN_KEY, "true");
+    } catch {
+      // ignore
+    }
+  }
+
+  // Textarea starts short (rows=5) and grows with the content instead of
+  // presenting a tall empty box by default - re-measured on every change,
+  // including programmatic ones (bookmarklet prefill, clearing on submit).
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [text]);
+
+  // Scrolls the freshly-arrived result into view instead of leaving the
+  // reader stranded below their own (now-collapsed) input.
+  useEffect(() => {
+    if (result && result.pathway !== "serious") {
+      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [result]);
+
+  // Panic-key text mask: blurs whatever's currently visible (draft or
+  // result) so a glance from across the room reads as illegible smudge,
+  // not your actual words. Same combo un-blurs. A modifier combo, not a
+  // bare key, since the textarea is very likely focused when you need this.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        setMasked((m) => !m);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  // Sticky mini-header once the hero scrolls out of view, so a long result
+  // doesn't feel like it's left the page behind.
+  useEffect(() => {
+    function onScroll() {
+      setShowMiniHeader(window.scrollY > 260);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Shows a small badge when the server is running with MOCK_MODE=true, so
   // "the rewrite barely changed anything" or "the blocker missed something"
@@ -302,13 +443,19 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  // Bookmarklet prefill (?rant=...) and output-only share links (?shared=...).
+  // Bookmarklet prefill (?rant=...), output-only share links (?shared=...),
+  // and reader mode (?reader=1: just the textarea and the result, no
+  // sidebar/hero/branding - see the data-reader-mode CSS in globals.css).
   // See t-rant-safety-legal-update.md section 6 and t-rant-phase2-brief.md
   // section 7.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const shared = params.get("shared");
     const rant = params.get("rant");
+    if (params.get("reader") === "1") {
+      setReaderMode(true);
+      document.documentElement.setAttribute("data-reader-mode", "true");
+    }
     if (shared) {
       const decoded = decodeShareData<SharedPayload>(shared);
       if (decoded) setSharedData(decoded);
@@ -316,6 +463,27 @@ export default function Home() {
       setText(rant);
     }
   }, []);
+
+  // Page-load "curtain rises" transition instead of a hard cut into the
+  // hero - see the trant-curtain-rise keyframes in globals.css. Runs once
+  // per mount (page load), not on every internal state change.
+  useEffect(() => {
+    const t = setTimeout(() => setCurtainVisible(false), 700);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Rotates the loading-state one-liner while a request is in flight.
+  useEffect(() => {
+    if (!loading) {
+      setLoadingMsgIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setLoadingMsgIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+      playSound(playLoadingTick);
+    }, 1400);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -358,17 +526,27 @@ export default function Home() {
     playSound((ctx) => playToneBlip(ctx, tone));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!text.trim() || text.length > MAX_CHARS) return;
-
-    // Create the AudioContext inside the click gesture, not after the
-    // fetch resolves — browsers block audio that isn't tied to a direct
-    // user interaction.
+  // Must be called from inside a click-handler call stack, same as the
+  // sounds themselves - browsers block audio that isn't tied to a direct
+  // user gesture. Shared by the submit button and the hero Rex click.
+  function ensureAudioContext() {
     if (!audioCtxRef.current && typeof window !== "undefined") {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioCtx) audioCtxRef.current = new AudioCtx();
     }
+  }
+
+  function clickHeroRex() {
+    ensureAudioContext();
+    playSound(playRoar);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!text.trim() || text.length > MAX_CHARS) return;
+
+    markGuidanceSeen();
+    ensureAudioContext();
     playSound(playStomp);
 
     setLoading(true);
@@ -398,6 +576,7 @@ export default function Home() {
         // for "firm" (violent_threat), a "womp womp" for "witty" blocks.
         if (rest.pathway === "firm") playSound(playHardStopTone);
         if (rest.pathway === "witty") playSound(playWittyWomp);
+        if (rest.pathway === "clean") playSound(playSuccessChime);
       }
     } catch {
       setError("Request failed");
@@ -446,54 +625,85 @@ export default function Home() {
   }
 
   return (
-    <main style={{ maxWidth: 700, margin: "0 auto", padding: "48px 28px 64px" }}>
-      {!isSerious && <AmbientBackground />}
+    <main style={{ maxWidth: 700, margin: "0 auto", padding: spacing.mainPad }}>
+      {curtainVisible && <CurtainRise />}
+      {!isSerious && !readerMode && <MiniHeader visible={showMiniHeader} stealth={stealth} />}
+      {!isSerious && !readerMode && <AmbientBackground />}
 
-      {!isSerious && (
-        <>
-          {mockMode && (
-            <p
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: "var(--color-text-soft)",
-                background: "var(--color-surface-muted)",
-                border: "1px solid var(--color-border)",
-                borderRadius: 999,
-                padding: "5px 12px",
-                display: "inline-block",
-                marginBottom: 14,
-              }}
-            >
-              🧪 Mock mode: rewrites and blocking use crude local patterns, not the real AI
-            </p>
-          )}
-          <header style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <PixelRex pose="idle" size={104} animate animateDuration="2.6s" />
-            <div>
-              <h1 style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1, color: "var(--color-text)" }}>
-                T-Rant
-              </h1>
+      {!isSerious && !readerMode && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
+          <div>
+            {mockMode && !stealth && (
               <p
                 style={{
-                  marginTop: 4,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: "var(--color-accent)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "var(--color-text-soft)",
+                  background: "var(--color-surface-muted)",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: 999,
+                  padding: "5px 12px",
+                  display: "inline-block",
                 }}
               >
-                Big feelings. Smart translation.
+                🧪 Mock mode: rewrites and blocking use crude local patterns, not the real AI
               </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={toggleStealth}
+            className="trant-icon-btn"
+            aria-label={stealth ? "Exit stealth mode" : "Enter stealth mode"}
+            title={stealth ? "Exit stealth mode - the Compsognathus creeps back out" : "Enter stealth mode - a Compsognathus hides in the bushes"}
+          >
+            {stealth ? "⚙" : "🕶️"}
+          </button>
+        </div>
+      )}
+
+      {!isSerious && !readerMode && (
+        <>
+          <header style={{ display: "flex", alignItems: "center", gap: spacing.heroGap }}>
+            {!stealth && (
+              <button
+                type="button"
+                onClick={clickHeroRex}
+                aria-label="Roar"
+                title="🦖"
+                style={{ all: "unset", cursor: "pointer", display: "flex" }}
+              >
+                <PixelRex pose="idle" size={spacing.heroSize} animate animateDuration="2.6s" />
+              </button>
+            )}
+            <div>
+              <h1 style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1, color: "var(--color-text)" }}>
+                {stealth ? "Notes" : "T-Rant"}
+              </h1>
+              {!stealth && (
+                <p
+                  style={{
+                    marginTop: 4,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "var(--color-accent)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  They probably deserved it.
+                </p>
+              )}
             </div>
           </header>
-          <p style={{ marginTop: 16, fontSize: 15.5, color: "var(--color-text-soft)", maxWidth: 540, lineHeight: 1.6 }}>
-            Paste your heated draft below — get three versions you can actually send, at your pick of
-            diplomacy.
-          </p>
+          {!stealth && (
+            <p style={{ marginTop: 16, fontSize: 15.5, color: "var(--color-text-soft)", maxWidth: 540, lineHeight: 1.6 }}>
+              Paste your heated draft below — get three versions you can actually send, at your pick of
+              diplomacy.
+            </p>
+          )}
 
-          {easterEgg && (
+          {easterEgg && !stealth && (
             <p
               style={{
                 marginTop: 14,
@@ -506,75 +716,166 @@ export default function Home() {
               🦖 Roar. You found the secret handshake.
             </p>
           )}
+        </>
+      )}
 
-          <BrandCard>
+      {!isSerious && (
+        <div style={{ filter: masked ? "blur(6px)" : undefined, transition: "filter 150ms ease" }}>
+          <BrandCard stealth={stealth || readerMode} cardPad={spacing.cardPad} cardMargin={spacing.cardMargin}>
             <form onSubmit={handleSubmit}>
-              <WritingGuidance />
+              {!stealth && !readerMode && (
+                <WritingGuidance
+                  collapsed={guidanceCollapsed}
+                  onExpand={() => setGuidanceCollapsed(false)}
+                  onCollapse={markGuidanceSeen}
+                />
+              )}
               <textarea
+                ref={textareaRef}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 maxLength={MAX_CHARS}
-                rows={8}
+                rows={5}
                 className="trant-field"
-                style={{ fontSize: 16 }}
-                placeholder="What's got you fired up?"
+                style={{ fontSize: 16, resize: "none", overflow: "hidden" }}
+                placeholder={stealth ? "Type a note..." : "What's got you fired up?"}
               />
-              <RageThermometer text={text} />
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+              {!stealth && !readerMode && <RageThermometer text={text} />}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+                {!stealth && !readerMode && (
+                  <span style={{ fontSize: 11, color: "var(--color-text-faint)" }}>
+                    Ctrl+Shift+M blurs this instantly - same keys to undo
+                  </span>
+                )}
                 <CharCount value={text.length} max={MAX_CHARS} />
               </div>
 
-              <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--color-border)" }}>
-                <label style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text)", display: "block", marginBottom: 6 }}>
-                  What set this off? <span style={{ fontWeight: 400, color: "var(--color-text-faint)" }}>(optional)</span>
-                </label>
-                <textarea
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  maxLength={CONTEXT_MAX_CHARS}
-                  rows={2}
-                  className="trant-field"
-                  style={{ fontSize: 14 }}
-                  placeholder="Quote or summarize what they said or did — helps the rewrite address their actual point, not just your tone."
-                />
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
-                  <CharCount value={context.length} max={CONTEXT_MAX_CHARS} />
+              {!stealth && !readerMode && (
+                <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--color-border)" }}>
+                  <label style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text)", display: "block", marginBottom: 6 }}>
+                    What set this off? <span style={{ fontWeight: 400, color: "var(--color-text-faint)" }}>(optional)</span>
+                  </label>
+                  <textarea
+                    value={context}
+                    onChange={(e) => setContext(e.target.value)}
+                    maxLength={CONTEXT_MAX_CHARS}
+                    rows={2}
+                    className="trant-field"
+                    style={{ fontSize: 14 }}
+                    placeholder="Quote or summarize what they said or did — helps the rewrite address their actual point, not just your tone."
+                  />
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+                    <CharCount value={context.length} max={CONTEXT_MAX_CHARS} />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginTop: 20 }}>
-                {loading && <PixelRex pose="idle" size={30} animate />}
+                {loading && !stealth && <PixelRex pose="idle" size={30} animate />}
                 <button type="submit" className="trant-btn trant-btn-primary" disabled={loading || !text.trim()}>
-                  {loading ? "T-Rex is thinking..." : "Translate"}
+                  {stealth ? (loading ? "Saving..." : "Save") : loading ? LOADING_MESSAGES[loadingMsgIndex] : "Translate"}
                 </button>
               </div>
             </form>
           </BrandCard>
-
-          <HelpNowBar onHelp={showHelpNow} />
-
-          {rateLimit && (
-            <p style={{ fontSize: 13, color: "var(--color-text-faint)", marginTop: 6 }}>
-              {rateLimit.remaining} of {rateLimit.limit} rants left this hour
-            </p>
-          )}
-
-          {error && <p style={{ color: "#b3453a", marginTop: 8 }}>{error}</p>}
-        </>
+        </div>
       )}
 
-      {result &&
-        (result.pathway === "serious" ? (
-          <SeriousCard result={result} onReset={resetToStart} />
-        ) : (
-          <BrandCard>
-            <ResultView result={result} originalText={submittedText} onToneClick={playTone} />
-          </BrandCard>
-        ))}
-      {result && result.pathway !== "serious" && <UnwindLinks />}
+      {!isSerious && !stealth && <HelpNowBar onHelp={showHelpNow} />}
 
-      {!isSerious && <PrivacyNotice />}
+      {!isSerious && rateLimit && !stealth && (
+        <p style={{ fontSize: 13, color: "var(--color-text-faint)", marginTop: 6 }}>
+          {rateLimit.remaining} of {rateLimit.limit} rants left this hour
+        </p>
+      )}
+
+      {!isSerious && error && <p style={{ color: "#b3453a", marginTop: 8 }}>{error}</p>}
+
+      {result && (
+        <div ref={resultRef} style={{ filter: masked ? "blur(6px)" : undefined, transition: "filter 150ms ease" }}>
+          {result.pathway === "serious" ? (
+            <SeriousCard result={result} onReset={resetToStart} />
+          ) : (
+            <BrandCard stealth={stealth || readerMode} cardPad={spacing.cardPad} cardMargin={spacing.cardMargin}>
+              <ResultView result={result} originalText={submittedText} onToneClick={playTone} density={density} />
+            </BrandCard>
+          )}
+        </div>
+      )}
+
+      {!isSerious && !readerMode && (
+        <details className="trant-accordion" style={{ marginTop: spacing.sectionGap + 16 }}>
+          <summary
+            style={{
+              cursor: "pointer",
+              padding: "10px 6px",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--color-text-faint)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span className="trant-qa-chevron">▸</span> Learn more
+          </summary>
+          {result && !stealth && <UnwindLinks />}
+          <PrivacyNotice />
+        </details>
+      )}
     </main>
+  );
+}
+
+// Page-load transition: a solid panel that lifts away instead of a hard cut
+// into the hero. Fixed overlay so it doesn't affect layout, removed from
+// the tree once its animation finishes (see the matching setTimeout in
+// Home()) rather than lingering as a pointer-events:none div forever.
+function CurtainRise() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 200,
+        background: "var(--color-bg-soft)",
+        animation: "trant-curtain-rise 650ms ease forwards",
+        pointerEvents: "none",
+      }}
+    />
+  );
+}
+
+// Small sticky bar that appears once the hero has scrolled out of view, so
+// a long result never feels disconnected from the rest of the page - a
+// wordmark (or "Notes" in stealth mode) plus a quick way back to the top.
+function MiniHeader({ visible, stealth }: { visible: boolean; stealth: boolean }) {
+  return (
+    <div
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 20,
+        display: visible ? "flex" : "none",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "8px 2px",
+        marginBottom: 8,
+        background: "var(--color-bg)",
+        borderBottom: "1px solid var(--color-border)",
+      }}
+    >
+      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--color-text)" }}>{stealth ? "Notes" : "🦖 T-Rant"}</span>
+      <button
+        type="button"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="trant-btn trant-btn-ghost"
+        style={{ fontSize: 12, padding: "4px 10px" }}
+      >
+        ↑ Top
+      </button>
+    </div>
   );
 }
 
@@ -584,7 +885,15 @@ export default function Home() {
 // different color scheme from the calming palette (serious pathway) so
 // that state stays visually distinct and un-branded, per
 // t-rant-safety-legal-update.md section 1.
-function BrandCard({ children }: { children: React.ReactNode }) {
+function BrandCard({ children, stealth = false, cardPad = 20, cardMargin = 22 }: { children: React.ReactNode; stealth?: boolean; cardPad?: number; cardMargin?: number }) {
+  // One caption per card instance, picked after mount rather than during
+  // render (Math.random() during render isn't allowed here - see the
+  // project's react-hooks/purity rule). Starts on the first caption, then
+  // settles on the picked one a tick later; imperceptible in practice.
+  const [caption, setCaption] = useState(BRAND_CAPTIONS[0]);
+  useEffect(() => {
+    setCaption(BRAND_CAPTIONS[Math.floor(Math.random() * BRAND_CAPTIONS.length)]);
+  }, []);
   const bandStyle: React.CSSProperties = {
     padding: "7px 16px",
     background: "#2d2a24",
@@ -599,15 +908,81 @@ function BrandCard({ children }: { children: React.ReactNode }) {
         border: "1px solid var(--color-border)",
         borderRadius: "var(--radius-md)",
         overflow: "hidden",
-        margin: "22px 0",
+        margin: `${cardMargin}px 0`,
         background: "var(--color-surface)",
         boxShadow: "var(--shadow-sm)",
       }}
     >
-      <div style={bandStyle}>🦖 T-Rant</div>
-      <div style={{ padding: 20 }}>{children}</div>
-      <div style={{ ...bandStyle, fontSize: 10.5 }}>🦖 T-Rant · big feelings, smart translation</div>
+      {!stealth && <div style={bandStyle}>🦖 T-Rant</div>}
+      <div style={{ padding: cardPad }}>{children}</div>
+      {!stealth && <div style={{ ...bandStyle, fontSize: 10.5 }}>🦖 T-Rant · {caption}</div>}
     </div>
+  );
+}
+
+// Rex-palette pixel squares, plain CSS keyframes (see globals.css), no
+// animation library. Fires once on mount - only ever rendered from
+// CleanResultView, so this never touches the self-harm/in-danger pathway,
+// which stays deliberately unbranded.
+const CONFETTI_COLORS = ["#6b8f71", "#2b6e63", "#d9c9a3", "#a8552c", "#4a7a94"];
+
+interface ConfettiPiece {
+  key: number;
+  left: number;
+  color: string;
+  delay: number;
+  tx: string;
+  tr: string;
+}
+
+function Confetti() {
+  // Randomized after mount, not during render (Math.random() during render
+  // isn't allowed here - see the project's react-hooks/purity rule). Empty
+  // on the first paint, populated a tick later - the burst is already
+  // animated in, so a one-tick delay before it starts is unnoticeable.
+  const [pieces, setPieces] = useState<ConfettiPiece[]>([]);
+  useEffect(() => {
+    setPieces(
+      Array.from({ length: 18 }, (_, i) => ({
+        key: i,
+        left: Math.random() * 100,
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+        delay: Math.random() * 150,
+        tx: `${(Math.random() - 0.5) * 60}px`,
+        tr: `${180 + Math.random() * 180}deg`,
+      }))
+    );
+  }, []);
+
+  return (
+    <div aria-hidden="true" style={{ position: "relative", height: 0, overflow: "visible" }}>
+      {pieces.map((p) => (
+        <span
+          key={p.key}
+          className="trant-confetti-piece"
+          style={
+            {
+              left: `${p.left}%`,
+              top: 0,
+              background: p.color,
+              animationDelay: `${p.delay}ms`,
+              "--tx": p.tx,
+              "--tr": p.tr,
+            } as React.CSSProperties
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
+// Small "🎉 copied!" stamp that pops in next to a copy action instead of
+// only swapping the button's own label - see the trant-stamp-in keyframes.
+function CopyStamp() {
+  return (
+    <span className="trant-copy-stamp" aria-hidden="true">
+      📋 Copied!
+    </span>
   );
 }
 
@@ -932,10 +1307,12 @@ function ResultView({
   result,
   originalText,
   onToneClick,
+  density,
 }: {
   result: RantResponse;
   originalText: string;
   onToneClick: (tone: ToneKey) => void;
+  density: "comfortable" | "compact";
 }) {
   switch (result.pathway) {
     // No sprite, no sound: hard_no gets a flat, minimal refusal with no
@@ -972,7 +1349,7 @@ function ResultView({
       );
 
     case "clean":
-      return <CleanResultView result={result} originalText={originalText} onToneClick={onToneClick} />;
+      return <CleanResultView result={result} originalText={originalText} onToneClick={onToneClick} density={density} />;
 
     default:
       return null;
@@ -983,16 +1360,23 @@ function CleanResultView({
   result,
   originalText,
   onToneClick,
+  density,
 }: {
   result: Extract<RantResponse, { pathway: "clean" }>;
   originalText: string;
   onToneClick: (tone: ToneKey) => void;
+  density: "comfortable" | "compact";
 }) {
   const [persona, setPersona] = useState<Persona | null>(null);
   const [personaText, setPersonaText] = useState<string | null>(null);
   const [personaLoading, setPersonaLoading] = useState<Persona | null>(null);
   const [personaError, setPersonaError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  // Compact defaults to expanded (compact mode is for people who want to
+  // see more at once, not less), comfortable defaults to the short view.
+  const [resultOpen, setResultOpen] = useState(density === "compact");
+  const [expanded, setExpanded] = useState(density === "compact");
+  const [personasOpen, setPersonasOpen] = useState(false);
 
   async function requestPersona(p: Persona) {
     setPersonaLoading(p);
@@ -1035,65 +1419,102 @@ function CleanResultView({
 
   return (
     <div>
+      <Confetti />
       <IntensityGauge intensity={result.intensity} />
 
-      <ToneHeading pose="raised_eyebrow" tone="still_you_just_cooler" label="Still You, Just Cooler" onClick={onToneClick} />
-      <p>{result.versions.stillYouJustCooler}</p>
-      <ExplanationCaption text={result.explanations.stillYouJustCooler} />
-      <ToneHeading pose="necktie" tone="professional_clear" label="Professional & Clear" onClick={onToneClick} />
-      <p>{result.versions.professionalClear}</p>
-      <ExplanationCaption text={result.explanations.professionalClear} />
-      <ToneHeading pose="olive_branch" tone="maximum_diplomacy" label="Maximum Diplomacy" onClick={onToneClick} />
-      <p>{result.versions.maximumDiplomacy}</p>
-      <ExplanationCaption text={result.explanations.maximumDiplomacy} />
+      {!resultOpen ? (
+        <button
+          type="button"
+          onClick={() => setResultOpen(true)}
+          className="trant-btn trant-btn-primary"
+          style={{ marginTop: 4 }}
+        >
+          🦖 Show my rewrite
+        </button>
+      ) : (
+        <>
+          <ToneHeading pose="necktie" tone="professional_clear" label="Professional & Clear" onClick={onToneClick} />
+          <p>{result.versions.professionalClear}</p>
+          <ExplanationCaption text={result.explanations.professionalClear} />
 
-      <DirectorsCut text={result.directorsCut} />
-
-      <div style={{ marginTop: 24, fontSize: 14 }}>
-        <p style={{ marginBottom: 8, color: "var(--color-text-soft)" }}>Try a persona (just for fun):</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {PERSONAS.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => requestPersona(p)}
-              disabled={personaLoading !== null}
-              className="trant-btn trant-btn-secondary"
-            >
-              {personaLoading === p ? "..." : PERSONA_LABELS[p]}
-            </button>
-          ))}
-        </div>
-        {personaError && <p style={{ color: "#b3453a", marginTop: 8 }}>{personaError}</p>}
-        {personaText && persona && (
-          <div
-            style={{
-              marginTop: 10,
-              padding: 14,
-              border: "1px solid var(--color-border)",
-              borderRadius: "var(--radius-sm)",
-              background: "var(--color-surface-muted)",
-            }}
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="trant-btn trant-btn-ghost"
+            style={{ marginTop: 4, fontSize: 13 }}
           >
-            <p style={{ margin: "0 0 6px", fontWeight: 600 }}>{PERSONA_LABELS[persona]}</p>
-            <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{personaText}</p>
-          </div>
-        )}
-      </div>
+            {expanded ? "Show fewer tones" : "See all 3 tones + Director's Cut"}
+          </button>
 
-      <div style={{ marginTop: 24, fontSize: 14 }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          <button type="button" onClick={shareOnX} className="trant-btn trant-btn-secondary">
-            Share on X
-          </button>
-          <button type="button" onClick={copyShareLink} className="trant-btn trant-btn-secondary">
-            {copied ? "Link copied!" : "Copy shareable link"}
-          </button>
-        </div>
-        <p style={{ fontSize: 12, color: "var(--color-text-faint)", marginTop: 8 }}>
-          Only the rewritten output goes in the link, never your original draft.
-        </p>
-      </div>
+          {expanded && (
+            <>
+              <ToneHeading pose="raised_eyebrow" tone="still_you_just_cooler" label="Still You, Just Cooler" onClick={onToneClick} />
+              <p>{result.versions.stillYouJustCooler}</p>
+              <ExplanationCaption text={result.explanations.stillYouJustCooler} />
+              <ToneHeading pose="olive_branch" tone="maximum_diplomacy" label="Maximum Diplomacy" onClick={onToneClick} />
+              <p>{result.versions.maximumDiplomacy}</p>
+              <ExplanationCaption text={result.explanations.maximumDiplomacy} />
+
+              <DirectorsCut text={result.directorsCut} />
+            </>
+          )}
+
+          <div style={{ marginTop: 24, fontSize: 14 }}>
+            {personasOpen ? (
+              <>
+                <p style={{ marginBottom: 8, color: "var(--color-text-soft)" }}>Try a persona (just for fun):</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {PERSONAS.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => requestPersona(p)}
+                      disabled={personaLoading !== null}
+                      className="trant-btn trant-btn-secondary"
+                    >
+                      {personaLoading === p ? "..." : PERSONA_LABELS[p]}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <button type="button" onClick={() => setPersonasOpen(true)} className="trant-btn trant-btn-ghost">
+                🎭 More tones
+              </button>
+            )}
+            {personaError && <p style={{ color: "#b3453a", marginTop: 8 }}>{personaError}</p>}
+            {personaText && persona && (
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: 14,
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius-sm)",
+                  background: "var(--color-surface-muted)",
+                }}
+              >
+                <p style={{ margin: "0 0 6px", fontWeight: 600 }}>{PERSONA_LABELS[persona]}</p>
+                <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{personaText}</p>
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginTop: 24, fontSize: 14 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <button type="button" onClick={shareOnX} className="trant-btn trant-btn-secondary">
+                Share on X
+              </button>
+              <button type="button" onClick={copyShareLink} className="trant-btn trant-btn-secondary">
+                Copy shareable link
+              </button>
+              {copied && <CopyStamp />}
+            </div>
+            <p style={{ fontSize: 12, color: "var(--color-text-faint)", marginTop: 8 }}>
+              Only the rewritten output goes in the link, never your original draft.
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 }

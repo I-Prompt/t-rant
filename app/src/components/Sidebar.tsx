@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
-import DensityToggle from "@/components/DensityToggle";
 import { useUIState } from "@/components/UIState";
 
 // Persistent left nav, shared by every page via layout.tsx. Client
@@ -95,61 +94,62 @@ export default function Sidebar() {
 
   return (
     <nav className="trant-sidebar" aria-label={stealth ? "Notes" : "T-Rant"}>
-      <div className="trant-sidebar-brand-row">
-        <Link href="/" className="trant-sidebar-brand">
-          {!stealth && (
-            <svg width="26" height="20" viewBox="0 0 26 20" aria-hidden="true">
-              <rect x="10" y="0" width="10" height="4" fill="#6b8f71" />
-              <rect x="8" y="4" width="14" height="4" fill="#6b8f71" />
-              <rect x="4" y="8" width="16" height="4" fill="#6b8f71" />
-              <rect x="0" y="12" width="14" height="4" fill="#6b8f71" />
-              <rect x="6" y="16" width="4" height="4" fill="#2d2a24" />
-              <rect x="14" y="16" width="4" height="4" fill="#2d2a24" />
-            </svg>
-          )}
-          <span className="trant-sidebar-brand-name">{stealth ? "Notes" : "T-Rant"}</span>
-        </Link>
-        <div className="trant-sidebar-toggles">
-          <DensityToggle />
-          <ThemeToggle />
-        </div>
-      </div>
-
-      {isHome && !stealth && haiku && !haikuDismissed && (
-        <div className="trant-haiku">
-          <div className="trant-haiku-head">
-            <span>🦖 Rant haiku of the day</span>
-            <button type="button" onClick={dismissHaiku} aria-label="Dismiss" className="trant-haiku-dismiss">
-              ×
-            </button>
+      <div className="trant-sidebar-inner">
+        <div className="trant-sidebar-brand-row">
+          <Link href="/" className="trant-sidebar-brand">
+            {!stealth && (
+              <svg width="26" height="20" viewBox="0 0 26 20" aria-hidden="true">
+                <rect x="10" y="0" width="10" height="4" fill="#6b8f71" />
+                <rect x="8" y="4" width="14" height="4" fill="#6b8f71" />
+                <rect x="4" y="8" width="16" height="4" fill="#6b8f71" />
+                <rect x="0" y="12" width="14" height="4" fill="#6b8f71" />
+                <rect x="6" y="16" width="4" height="4" fill="#2d2a24" />
+                <rect x="14" y="16" width="4" height="4" fill="#2d2a24" />
+              </svg>
+            )}
+            <span className="trant-sidebar-brand-name">{stealth ? "Notes" : "T-Rant"}</span>
+          </Link>
+          <div className="trant-sidebar-toggles">
+            <ThemeToggle />
           </div>
-          <p className="trant-haiku-text">{haiku}</p>
         </div>
-      )}
 
-      <div className="trant-nav">
-        {TOP_LINKS.map((link) => (
-          <Link key={link.href} href={link.href} className={navLinkClass(pathname === link.href)}>
-            {stealth ? plainLabel(link.label) : link.label}
-          </Link>
-        ))}
+        {isHome && !stealth && haiku && !haikuDismissed && (
+          <div className="trant-haiku">
+            <div className="trant-haiku-head">
+              <span>🦖 Rant haiku of the day</span>
+              <button type="button" onClick={dismissHaiku} aria-label="Dismiss" className="trant-haiku-dismiss">
+                ×
+              </button>
+            </div>
+            <p className="trant-haiku-text">{haiku}</p>
+          </div>
+        )}
 
-        <div className="trant-nav-divider" role="separator" />
+        <div className="trant-nav">
+          {TOP_LINKS.map((link) => (
+            <Link key={link.href} href={link.href} className={navLinkClass(pathname === link.href)}>
+              {stealth ? plainLabel(link.label) : link.label}
+            </Link>
+          ))}
 
-        {BOTTOM_LINKS.map((link) => (
-          <Link key={link.href} href={link.href} className={navLinkClass(pathname === link.href)}>
-            {stealth ? plainLabel(link.label) : link.label}
-          </Link>
-        ))}
+          <div className="trant-nav-divider" role="separator" />
+
+          {BOTTOM_LINKS.map((link) => (
+            <Link key={link.href} href={link.href} className={navLinkClass(pathname === link.href)}>
+              {stealth ? plainLabel(link.label) : link.label}
+            </Link>
+          ))}
+        </div>
+
+        <p className="trant-sidebar-foot">
+          No accounts.
+          <br />
+          No stored rants.
+          <br />
+          No tracking.
+        </p>
       </div>
-
-      <p className="trant-sidebar-foot">
-        No accounts.
-        <br />
-        No stored rants.
-        <br />
-        No tracking.
-      </p>
     </nav>
   );
 }

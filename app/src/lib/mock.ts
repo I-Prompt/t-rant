@@ -14,6 +14,7 @@ interface MockGeneratedRewrite {
   versions: ToneVersions;
   explanations: ToneExplanations;
   directorsCut: string;
+  backstory: string;
 }
 
 type ReasonFn = (phrase: string) => string;
@@ -221,7 +222,28 @@ export function mockGenerateToneVersions(text: string, _context?: string): MockG
       maximumDiplomacy: "Same edits as Professional & Clear, plus extra hedging.",
     },
     directorsCut: text,
+    backstory: mockBackstory(),
   };
+}
+
+// Crude stand-in for the real dinosaur_backstory field (see generator.ts):
+// mock mode can't actually read the input for meaning, so unlike the real
+// generator this doesn't reflect the rant's content at all - it's just
+// template + word-bank filler, same "exercises the UI, not a quality demo"
+// spirit as the rest of this file.
+const BACKSTORY_TEMPLATES = [
+  "In a land before time, a {a} grew quietly furious because a {b} kept borrowing something precious and never gave it back.",
+  "Deep in the fern forest, a {a} was minding its own business when a {b} did something spectacularly inconsiderate.",
+  "Legend tells of a {a} who waited, and waited, for a {b} to notice - and {b} simply did not.",
+  "Somewhere near the volcano, a {a} discovered that a {b} had, once again, made a promise it had no intention of keeping.",
+  "Once, in the age of giants, a small but mighty {a} decided it had had quite enough of a certain {b}.",
+];
+const BACKSTORY_SUBJECTS = ["Stegosaurus", "Triceratops", "Pterodactyl", "Velociraptor", "Brontosaurus", "Ankylosaurus"];
+
+function mockBackstory(): string {
+  const [a, b] = [...BACKSTORY_SUBJECTS].sort(() => Math.random() - 0.5);
+  const template = BACKSTORY_TEMPLATES[Math.floor(Math.random() * BACKSTORY_TEMPLATES.length)];
+  return template.replaceAll("{a}", a).replaceAll("{b}", b);
 }
 
 const PERSONA_MOCK_WRAPPER: Record<Persona, (body: string) => string> = {

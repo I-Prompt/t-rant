@@ -5,6 +5,12 @@ export const MAX_REQUESTS_PER_WINDOW = 10;
 // with someone's real rant budget.
 export const DEMO_MAX_REQUESTS_PER_WINDOW = 20;
 
+// Minimum gap between two requests from the same key, regardless of how far
+// under the hourly cap they are — blunts a script blasting through an
+// entire hourly allowance in under a second. No real person submits, reads
+// a response, and resubmits that fast, so this never affects normal use.
+const BURST_MIN_INTERVAL_MS = 1000;
+
 // In-memory only — resets on cold start and isn't shared across serverless
 // instances. Good enough for local dev / a low-traffic v1 prototype; swap
 // for durable storage (Vercel KV / Upstash) before real production traffic.
@@ -24,6 +30,12 @@ export interface RateLimitCheck {
 export function checkRateLimit(key: string, maxRequests: number = MAX_REQUESTS_PER_WINDOW): RateLimitCheck {
   const now = Date.now();
   const timestamps = (requestLog.get(key) ?? []).filter((t) => now - t < WINDOW_MS);
+
+  const last = timestamps[timestamps.length - 1];
+  if (last !== undefined && now - last < BURST_MIN_INTERVAL_MS) {
+    requestLog.set(key, timestamps);
+    return { limited: true, remaining: Math.max(0, maxRequests - timestamps.length) };
+  }
 
   if (timestamps.length >= maxRequests) {
     requestLog.set(key, timestamps);

@@ -54,7 +54,12 @@ html {
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;
+  /* clip, not hidden: setting overflow-x alone to a non-visible value
+     forces the UA to also compute overflow-y as a scroll container (per
+     the CSS Overflow spec's "flooring" rule), which silently breaks
+     position: sticky on descendants like the sidebar's inner wrapper below
+     - clip avoids that pairing while still preventing horizontal scroll. */
+  overflow-x: clip;
 }
 
 body {
@@ -94,17 +99,25 @@ select {
   min-height: 100vh;
 }
 
+/* No fixed height here on purpose: the grid stretches this column to match
+   whatever's taller (almost always the main column), so the background
+   covers the full page instead of stopping at one viewport height. The
+   sticky, viewport-pinned nav content lives in the inner wrapper below. */
 .trant-sidebar {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  padding: 28px 20px;
   border-right: 1px solid var(--color-border);
   background: var(--color-bg-soft);
   transition: opacity 220ms ease, filter 220ms ease;
+}
+
+.trant-sidebar-inner {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 20px;
 }
 
 .trant-sidebar-brand-row {
@@ -133,8 +146,9 @@ select {
   width: 30px;
   height: 30px;
   border-radius: 999px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
   font-size: 13px;
   line-height: 1;
   cursor: pointer;
@@ -144,6 +158,15 @@ select {
 
 .trant-icon-btn:hover {
   background: var(--color-surface-muted);
+}
+
+/* Wider variant for the stealth toggle - a plain circle read as too small
+   a target for what's meant to be a quick, reach-for-it-fast control. */
+.trant-stealth-btn {
+  width: auto;
+  min-width: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
 }
 
 .trant-sidebar-brand-name {
@@ -158,7 +181,7 @@ select {
    close to the full --sidebar-w, not the ~192px left after that padding -
    needed so a haiku line fits on one line instead of wrapping mid-word. */
 .trant-haiku {
-  margin: 2px -20px 18px;
+  margin: 0 -20px;
   padding: 10px 14px;
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
@@ -293,9 +316,10 @@ html[data-reader-mode="true"] .trant-shell {
     grid-template-columns: 1fr;
   }
 
-  .trant-sidebar {
+  .trant-sidebar-inner {
     position: static;
     height: auto;
+    overflow-y: visible;
     flex-direction: row;
     align-items: center;
     gap: 18px;

@@ -114,7 +114,7 @@ export default function HouseRules() {
         </p>
       </QA>
 
-      <QA question="Can this actually catch every threat, or stop someone dangerous?" tone="notice">
+      <QA question="Can this actually catch every threat, or stop someone dangerous?">
         <p>
           <strong>No, and it isn&apos;t designed to.</strong> T-Rant is a portfolio/demo project, not a
           content-moderation or safety product. Its classifier - a real AI model in the live version, a
@@ -125,20 +125,19 @@ export default function HouseRules() {
         </p>
         <p style={{ marginBottom: 0 }}>
           If you or someone else needs real help right now, don&apos;t wait on this tool to recognize
-          that: the main page has two buttons above the textarea (&quot;I&apos;m thinking about hurting
-          myself&quot; and &quot;Someone is hurting me&quot;) that skip classification entirely and go
-          straight to real resources, including local emergency numbers. If you believe someone is in
-          immediate danger, contact emergency services directly rather than typing anything into any
-          website first.
+          that: the main page has two buttons below the textarea (&quot;Thoughts of self-harm&quot; and
+          &quot;Being hurt by someone&quot;) that skip classification entirely and go straight to real
+          resources, including local emergency numbers. If you believe someone is in immediate danger,
+          contact emergency services directly rather than typing anything into any website first.
         </p>
       </QA>
 
-      <QA question="Can I see what the classifier does with my own words before I trust it?">
+      <QA question="Can I try the classifier myself?">
         <p>
-          Type anything below and see exactly what category it gets and why - no rewrite is ever
-          generated here, this only shows what the first-stage classifier sees. Note this demo runs the
-          same classifier as the main tool, so it's a real test of what does and doesn't get flagged -
-          not a guaranteed catch-all (see the question above).
+          <strong>Classifier Sandbox:</strong> type anything below and see exactly what category it gets
+          and why - no rewrite is ever generated here, this only shows what the first-stage classifier
+          sees. It runs the same classifier as the main tool, so it&apos;s a real test of what does and
+          doesn&apos;t get flagged - not a guaranteed catch-all (see the honest-limits question above).
         </p>
         <ClassifierDemo />
       </QA>
@@ -161,7 +160,9 @@ export default function HouseRules() {
           .
         </p>
         <p style={{ marginBottom: 0 }}>
-          Don&apos;t take our word for it: the code that decides what gets logged is public. Open the{" "}
+          The only thing ever logged, for any request, is its category and a timestamp - never the text
+          itself. Don&apos;t take our word for it: the code that decides what gets logged is public.
+          Open the{" "}
           <a href={GITHUB_LOGGING_CODE_URL} target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-link)", textDecoration: "underline" }}>
             <code>src/lib</code> folder
           </a>{" "}
@@ -195,7 +196,11 @@ export default function HouseRules() {
       <TopicGroup label="The fine print" />
 
       <QA question="Are you eventually going to slap ads or a paywall on this?">
-        <ul style={{ paddingLeft: 20, display: "grid", gap: 4 }}>
+        <p>
+          <strong>No.</strong> This is a portfolio/demo project with no monetization plans, and this
+          page is the public commitment to that. T-Rant will never add:
+        </p>
+        <ul style={{ paddingLeft: 20, display: "grid", gap: 4, marginBottom: 0 }}>
           <li>Ads</li>
           <li>Reselling or sharing your text with anyone</li>
           <li>Training any model on what you submit</li>
@@ -207,7 +212,7 @@ export default function HouseRules() {
       <QA question="Is there a limit on how much I can use this?">
         <p style={{ marginBottom: 0 }}>
           Roughly 10 rewrite requests per IP address per hour, to keep the tool sustainable and
-          resistant to abuse. The classifier demo above has its own, separate allowance, so trying it
+          resistant to abuse. The Classifier Sandbox above has its own, separate allowance, so trying it
           out doesn&apos;t eat into your real rewrite budget.
         </p>
       </QA>

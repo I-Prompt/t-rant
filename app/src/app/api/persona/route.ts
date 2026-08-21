@@ -3,6 +3,7 @@ import { classify } from "@/lib/classifier";
 import { mockClassify, mockGeneratePersonaVersion } from "@/lib/mock";
 import { generatePersonaVersion } from "@/lib/personas";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { isSameOrigin } from "@/lib/requestGuard";
 import { PERSONAS, Persona, PersonaRequestBody } from "@/lib/types";
 
 // Personas are a secondary, "for fun" feature reached only after a message
@@ -26,6 +27,10 @@ function getClientIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ ok: false, error: "Request rejected" }, { status: 403 });
+  }
+
   const ip = getClientIp(req);
 
   const { limited, remaining } = checkRateLimit(`persona:${ip}`, PERSONA_MAX_REQUESTS_PER_WINDOW);

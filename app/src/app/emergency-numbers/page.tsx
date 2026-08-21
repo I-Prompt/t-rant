@@ -14,9 +14,12 @@ export default function EmergencyNumbers() {
     <main style={{ maxWidth: 560, margin: "0 auto", padding: "48px 28px 64px" }}>
       <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em" }}>Emergency Numbers (reference)</h1>
 
-      <div style={{ marginTop: 16, padding: 14, border: "1px solid var(--color-sage-soft)", borderRadius: "var(--radius-sm)", background: "var(--color-sage-soft)", fontSize: 14, lineHeight: 1.6 }}>
-        {EMERGENCY_NUMBERS_STATUS.reason} If you're in crisis right now, findahelpline.com (shown on
-        the main page, and above this picker there too) is the actively maintained path.
+      <div style={{ marginTop: 16, padding: 14, border: "1px solid var(--color-sage-soft)", borderRadius: "var(--radius-sm)", background: "var(--color-sage-soft)", fontSize: 14, lineHeight: 1.7, display: "grid", gap: 10 }}>
+        <p style={{ margin: 0 }}>{EMERGENCY_NUMBERS_STATUS.reason}</p>
+        <p style={{ margin: 0 }}>
+          If you're in crisis right now, findahelpline.com (also shown alongside this same picker on
+          the main page) is the actively maintained path.
+        </p>
       </div>
 
       <div style={{ marginTop: 20 }}>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { classify } from "@/lib/classifier";
 import { mockClassify } from "@/lib/mock";
 import { checkRateLimit, DEMO_MAX_REQUESTS_PER_WINDOW } from "@/lib/rateLimit";
+import { isSameOrigin } from "@/lib/requestGuard";
 import { RantRequestBody } from "@/lib/types";
 
 // Classification-only sandbox for the House Rules page: shows category +
@@ -21,6 +22,10 @@ function getClientIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: "Request rejected" }, { status: 403 });
+  }
+
   const ip = getClientIp(req);
 
   const { limited, remaining } = checkRateLimit(`demo:${ip}`, DEMO_MAX_REQUESTS_PER_WINDOW);

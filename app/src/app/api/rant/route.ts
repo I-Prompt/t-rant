@@ -4,6 +4,7 @@ import { generateToneVersions } from "@/lib/generator";
 import { mockClassify, mockGenerateToneVersions } from "@/lib/mock";
 import { pickQuote, WittyTrigger } from "@/lib/quotes";
 import { checkRateLimit, MAX_REQUESTS_PER_WINDOW } from "@/lib/rateLimit";
+import { isSameOrigin } from "@/lib/requestGuard";
 import { SELF_HARM_CONTENT, SERIOUS_RESOURCE_URL } from "@/lib/selfHarmContent";
 import { CONTEXT_MAX_CHARS, FlaggedInfo, RantRequestBody, RantResponse } from "@/lib/types";
 
@@ -26,6 +27,10 @@ function getClientIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: "Request rejected" }, { status: 403 });
+  }
+
   const ip = getClientIp(req);
 
   const { limited, remaining } = checkRateLimit(ip);
@@ -139,10 +144,10 @@ export async function POST(req: NextRequest) {
     case "clean":
     default: {
       try {
-        const { versions, explanations, directorsCut } = MOCK_MODE
+        const { versions, explanations, directorsCut, backstory } = MOCK_MODE
           ? mockGenerateToneVersions(text, context)
           : await generateToneVersions(text, context);
-        responseBody = { pathway: "clean", versions, explanations, directorsCut, intensity };
+        responseBody = { pathway: "clean", versions, explanations, directorsCut, intensity, backstory };
       } catch (err) {
         console.error("Generator error:", err);
         return NextResponse.json({ error: "Generation failed" }, { status: 502 });

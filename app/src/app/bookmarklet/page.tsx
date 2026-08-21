@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 // Mechanics per t-rant-safety-legal-update.md section 6. The bookmarklet
 // grabs whatever text is selected on the current page and opens T-Rant with
 // it pre-filled — a browser-level API, not site-specific scraping, so it
@@ -12,12 +14,30 @@
 // Added an explicit note on corporate-managed devices, since a meaningful
 // share of this tool's audience will be using it on a work laptop. The same
 // note is mirrored in House Rules.
+//
+// 2026-08-21 fix: React (19+) sanitizes any `href` it renders through JSX
+// and replaces `javascript:` URLs with a stub that just throws - a genuine
+// XSS-prevention feature, but it silently broke this link's only reason to
+// exist, since the whole point of a bookmarklet IS a javascript: href. The
+// fix is to skip JSX's `href` prop entirely and set the attribute
+// imperatively after mount (see the ref + effect below), which never goes
+// through React's interceptor.
 
 const BOOKMARKLET_CODE = `javascript:(function(){var text=window.getSelection().toString();window.open('${
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://t-rant.vercel.app"
 }/?rant='+encodeURIComponent(text),'_blank');})();`;
 
 export default function Bookmarklet() {
+  const linkRef = useRef<HTMLAnchorElement>(null);
+
+  // Sets the real javascript: URL after mount, bypassing React's href
+  // sanitizer (see the comment above BOOKMARKLET_CODE) - imperative
+  // setAttribute on the DOM node never goes through React's own
+  // prop-setting path, so it isn't intercepted the way a JSX href prop is.
+  useEffect(() => {
+    linkRef.current?.setAttribute("href", BOOKMARKLET_CODE);
+  }, []);
+
   return (
     <main style={{ maxWidth: 620, margin: "0 auto", padding: "48px 28px 64px" }}>
       <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em" }}>The Bookmarklet</h1>
@@ -36,7 +56,8 @@ export default function Bookmarklet() {
 
       <Section heading="Does using it change anything about privacy or storage?">
         <p>
-          No. T-Rant&apos;s own promise - no accounts, no stored rants, no tracking (see{" "}
+          No. T-Rant&apos;s own promise - no accounts, no stored rants, no tracking, and nothing ever
+          logged beyond a request&apos;s category and a timestamp, never the text itself (see{" "}
           <a href="/house-rules" style={{ color: "var(--color-link)", textDecoration: "underline" }}>House Rules</a>)
           - is exactly the same whether you type into the box by hand or arrive here via the bookmarklet.
         </p>
@@ -72,8 +93,12 @@ export default function Bookmarklet() {
         </ol>
 
         <p style={{ margin: "20px 0" }}>
+          {/* No href prop here on purpose - see the effect above. If React
+              ever set this prop via JSX (even to a harmless placeholder),
+              a later re-render would re-assert it and wipe out the real
+              javascript: URL the effect wrote in imperatively. */}
           <a
-            href={BOOKMARKLET_CODE}
+            ref={linkRef}
             onClick={(e) => e.preventDefault()}
             draggable
             className="trant-btn trant-btn-secondary"

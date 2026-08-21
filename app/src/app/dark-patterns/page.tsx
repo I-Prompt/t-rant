@@ -3,7 +3,8 @@ import Link from "next/link";
 // A satire page mocking how a typical app would monetize this exact tool.
 // Everything below is a mockup, clearly labeled, and none of it is
 // implemented anywhere in T-Rant. See t-rant-phase2-brief.md section 6 and
-// the "What we'll never add" list on the House Rules page.
+// the "Are you eventually going to slap ads or a paywall on this?" list on
+// the House Rules page.
 
 const FAKE_FEATURES = [
   {
@@ -82,7 +83,7 @@ export default function DarkPatterns() {
         <Link href="/house-rules" style={{ color: "var(--color-link)", textDecoration: "underline" }}>
           House Rules
         </Link>{" "}
-        page, under "What we'll never add."
+        page, under "Are you eventually going to slap ads or a paywall on this?"
       </p>
     </main>
   );

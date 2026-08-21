@@ -131,6 +131,11 @@ export type RantResponse =
       // `versions` wholesale — see copyShareLink in page.tsx).
       directorsCut: string;
       intensity: number;
+      // A silly 1-2 sentence dinosaur-world allegory of what the rant was
+      // about, generated without reusing any of the actual words - shown as
+      // a teaser on the shareable-link page, ahead of the real rewrite. See
+      // generator.ts's dinosaur_backstory field.
+      backstory: string;
     };
 
 export type ApiRantResponse = RantResponse & { rateLimit: RateLimitInfo };

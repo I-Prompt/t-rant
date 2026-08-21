@@ -16,7 +16,9 @@ None of the three tone versions may reuse the input's sentences verbatim or near
 
 Also produce one more thing, directors_cut: the rawest, most emotionally honest version of the message, explicitly for the sender's own eyes only - it is never meant to be sent to anyone, so it does not need to be diplomatic, professional, or even coherent-sounding-calm. It can include mild profanity and blunt, unvarnished language that reflects genuine frustration - this is catharsis, not communication. It still must never cross into slurs, name-calling based on protected characteristics, threats of violence, or anything genuinely cruel toward the other person: the brief is maximum honesty about the sender's own feelings, not maximum cruelty toward someone else. Keep every point and detail from the input, same as still_you_just_cooler.
 
-Finally, write one short explanation per tone version (not for directors_cut): still_you_just_cooler_explanation, professional_clear_explanation, and maximum_diplomacy_explanation. Each is one plain sentence, under 15 words, in the same language as the rewrites, describing what changed from the original input and why for that specific tier (e.g. "Removed the swearing and the pay comparison; kept the deadline concern front and center."). Do not use em dashes in these either.
+Also write one short explanation per tone version (not for directors_cut): still_you_just_cooler_explanation, professional_clear_explanation, and maximum_diplomacy_explanation. Each is one plain sentence, under 15 words, in the same language as the rewrites, describing what changed from the original input and why for that specific tier (e.g. "Removed the swearing and the pay comparison; kept the deadline concern front and center."). Do not use em dashes in these either.
+
+Finally, write dinosaur_backstory: a single short, whimsical 1-2 sentence "story opener" (fairy-tale or nature-documentary narration style, e.g. "In a land before time, a Stegosaurus grew quietly furious because a Pterodactyl kept borrowing her favorite rock and never gave it back.") that recasts the real emotional situation - who did what, and why the sender is upset - entirely as an absurd prehistoric/dinosaur-world allegory. The real shape of the situation should stay recognizable, but do not reuse any of the actual words, names, or specific nouns from the original input - invent dinosaur-world stand-ins for every person, thing, and place involved. Keep it in the same language as the rewrites. This is shown as a silly teaser on the shareable-link page, ahead of the real rewritten text, so it must never quote or closely paraphrase the original wording.
 
 You may also receive a <context> block: what the other person said or did, in the sender's own words, describing what prompted this message. Only <user_input> is being rewritten - <context> is never rewritten, quoted verbatim, or treated as a message to soften. Use it solely to understand the situation so the rewrite can respond to their specific point where relevant, instead of neutralizing tone in a vacuum. If no <context> block is present, ignore this instruction entirely.
 
@@ -35,6 +37,7 @@ const REWRITE_TOOL = {
       still_you_just_cooler_explanation: { type: "string" as const },
       professional_clear_explanation: { type: "string" as const },
       maximum_diplomacy_explanation: { type: "string" as const },
+      dinosaur_backstory: { type: "string" as const },
     },
     required: [
       "still_you_just_cooler",
@@ -44,6 +47,7 @@ const REWRITE_TOOL = {
       "still_you_just_cooler_explanation",
       "professional_clear_explanation",
       "maximum_diplomacy_explanation",
+      "dinosaur_backstory",
     ],
   },
 };
@@ -52,6 +56,7 @@ export interface GeneratedRewrite {
   versions: ToneVersions;
   explanations: ToneExplanations;
   directorsCut: string;
+  backstory: string;
 }
 
 export async function generateToneVersions(text: string, context?: string): Promise<GeneratedRewrite> {
@@ -88,6 +93,7 @@ export async function generateToneVersions(text: string, context?: string): Prom
     still_you_just_cooler_explanation: string;
     professional_clear_explanation: string;
     maximum_diplomacy_explanation: string;
+    dinosaur_backstory: string;
   };
 
   return {
@@ -102,5 +108,6 @@ export async function generateToneVersions(text: string, context?: string): Prom
       maximumDiplomacy: input.maximum_diplomacy_explanation,
     },
     directorsCut: input.directors_cut,
+    backstory: input.dinosaur_backstory,
   };
 }

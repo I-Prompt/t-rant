@@ -10,6 +10,8 @@ Built with:
   <img src="https://img.shields.io/badge/status-portfolio%20project-6b8f71?style=flat-square" alt="Portfolio project">
 </p>
 
+Prehistoric rage, modern-day HR compliance.
+
 Paste a heated draft message - a Slack rant, an angry email - and get back three versions at different diplomacy levels, so you can pick one and actually send it instead of the original.
 
 Live at **[t-rant.vercel.app](https://t-rant.vercel.app/)**.

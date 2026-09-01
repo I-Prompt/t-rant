@@ -49,7 +49,7 @@ const LOADING_MESSAGES = [
 // top band always reads "🦖 T-Rant" (the actual mark); only this smaller
 // one rotates.
 const BRAND_CAPTIONS = [
-  "they probably deserved it",
+  "big mad, small email",
   "no accounts, no regrets",
   "diplomacy, occasionally",
   "rewritten, not repressed",
@@ -749,15 +749,14 @@ export default function Home() {
                     letterSpacing: "0.05em",
                   }}
                 >
-                  They probably deserved it.
+                  Big mad, small email.
                 </p>
               )}
             </div>
           </header>
           {!stealth && (
             <p style={{ marginTop: 16, fontSize: 15.5, color: "var(--color-text-soft)", maxWidth: 540, lineHeight: 1.6 }}>
-              Paste your heated draft below — get three versions you can actually send, at your pick of
-              diplomacy.
+              Prehistoric rage, modern-day HR compliance.
             </p>
           )}
 

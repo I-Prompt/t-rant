@@ -876,7 +876,7 @@ export default function Home() {
       )}
 
       {!isSerious && !stealth && <HelpNowBar onHelp={showHelpNow} />}
-      {!isSerious && !stealth && <BugReportLine />}
+      {!isSerious && !stealth && <HelpLanguagePicker />}
 
       {!isSerious && rateLimit && !stealth && (
         <p style={{ fontSize: 13, color: "var(--color-text-faint)", marginTop: 6 }}>
@@ -921,7 +921,7 @@ export default function Home() {
         </details>
       )}
 
-      {!isSerious && !readerMode && !stealth && <HelpLanguagePicker />}
+      {!isSerious && !readerMode && !stealth && <BugReportLine />}
     </main>
   );
 }
@@ -1269,14 +1269,15 @@ function HelpNowBar({ onHelp }: { onHelp: (kind: "self_harm" | "in_danger") => v
   );
 }
 
-// Moved out of the sidebar 2026-09-02 - a bug report isn't something that
-// needs a permanent nav slot, so it now lives here instead: same quiet
-// text-line treatment as HelpNowBar above it, not a bordered callout or a
+// Moved out of the sidebar 2026-09-02, then down to the very bottom of the
+// page 2026-09-03 (swapped spots with HelpLanguagePicker, which moved up to
+// sit with the buttons it actually affects - see that component). Same
+// quiet text-line treatment throughout, not a bordered callout or a
 // persistent link. The 🐛 is deliberately the only emoji - this is a small
 // utility line, not a branded moment.
 function BugReportLine() {
   return (
-    <p style={{ fontSize: 13, color: "var(--color-text-faint)", margin: "6px 0 0", lineHeight: 1.6 }}>
+    <p style={{ fontSize: 13, color: "var(--color-text-faint)", margin: "16px 0 0", lineHeight: 1.6 }}>
       🐛 Found something broken?{" "}
       <a
         href={BUG_REPORT_URL}
@@ -2059,15 +2060,13 @@ function UnwindLinks() {
   );
 }
 
-// Reformatted 2026-08-19 for readability: a short heading, three trust
-// Subtle, bottom-of-page control: lets someone set a language ahead of
-// time for the "get help now" buttons, which otherwise have no typed text
-// to detect a language from (see resolveHelpLanguage above) and would
-// silently default to English. Deliberately not styled as a prominent
-// setting - the goal is that it's there to find, not something everyone
-// needs to notice on first visit - but it isn't hidden inside the
-// collapsed "Learn more" accordion either, since it's meant to be set
-// before an emergency, not discovered during one.
+// Sits right under HelpNowBar (moved there 2026-09-03 - it used to live at
+// the bottom of the page captioned "if 'get help now' is clicked...", but
+// there's no button actually labeled "get help now" (the real buttons say
+// "Thoughts of self-harm" / "Being hurt by someone"), so that copy pointed
+// at nothing a reader could see. Grouping it with the buttons it actually
+// affects, with English pre-selected by default, reads as what it is: set
+// this before you need it, not a setting you have to go hunting for.
 function HelpLanguagePicker() {
   const [selected, setSelected] = useState<SupportedLanguage>("en");
 
@@ -2089,7 +2088,7 @@ function HelpLanguagePicker() {
       style={{
         fontSize: 12,
         color: "var(--color-text-faint)",
-        marginTop: 16,
+        marginTop: 6,
         lineHeight: 1.6,
         display: "flex",
         alignItems: "center",
@@ -2097,11 +2096,11 @@ function HelpLanguagePicker() {
         gap: 6,
       }}
     >
-      <span>🌍 If &quot;get help now&quot; is clicked before typing anything, reply in:</span>
+      <span>🌍 Get response in:</span>
       <select
         value={selected}
         onChange={(e) => choose(e.target.value as SupportedLanguage)}
-        aria-label="Get help now language"
+        aria-label="Get response in"
         style={{
           background: "var(--color-surface)",
           color: "var(--color-text-faint)",
@@ -2122,6 +2121,7 @@ function HelpLanguagePicker() {
   );
 }
 
+// Reformatted 2026-08-19 for readability: a short heading, three trust
 // bullets up front (the promise, at a glance), then the fuller paragraphs
 // with more breathing room. The link to House Rules used to live here too;
 // it's now in the persistent sidebar nav instead, so it isn't repeated.

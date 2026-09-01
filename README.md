@@ -10,9 +10,7 @@ Built with:
   <img src="https://img.shields.io/badge/status-portfolio%20project-6b8f71?style=flat-square" alt="Portfolio project">
 </p>
 
-Prehistoric rage, modern-day HR compliance.
-
-Paste a heated draft message - a Slack rant, an angry email - and get back three versions at different diplomacy levels, so you can pick one and actually send it instead of the original.
+Paste the message you're about to regret sending - a Slack rant, an angry email - and get three versions back you can actually send instead, each at a different level of diplomacy.
 
 Live at **[t-rant.vercel.app](https://t-rant.vercel.app/)**.
 
@@ -113,7 +111,9 @@ The throughline: don't just claim something's safe or private - make it checkabl
 
 ## Multilingual Support
 
-Supported: **English, German, Spanish, Italian, French, Swedish, Russian.** The classifier detects the input's language and the response follows it - except the highest-stakes copy, which is deliberately *not* live-translated:
+**Yes, you can write your actual rant in another language.** Paste your message in German, Spanish, Italian, French, Swedish, or Russian (in addition to English) and the classifier detects it automatically - no language picker, no setting to change. The rewrite, the explanations, and the flagged-phrase reasoning all come back in that same language.
+
+The site's own chrome doesn't switch languages though - see "Deliberately not translated" below. Here's exactly what does and doesn't follow your language:
 
 | Content | How it's translated |
 |---|---|

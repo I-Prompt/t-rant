@@ -756,7 +756,8 @@ export default function Home() {
           </header>
           {!stealth && (
             <p style={{ marginTop: 16, fontSize: 15.5, color: "var(--color-text-soft)", maxWidth: 540, lineHeight: 1.6 }}>
-              Prehistoric rage, modern-day HR compliance.
+              Paste your heated draft below — get three versions you can actually send, at your pick of
+              diplomacy.
             </p>
           )}
 

@@ -18,6 +18,7 @@ import {
   PersonaApiResponse,
   RantResponse,
   RateLimitInfo,
+  SUPPORTED_LANGUAGES,
   SupportedLanguage,
   ToneVersions,
 } from "@/lib/types";
@@ -67,6 +68,28 @@ const ANTHROPIC_TRAINING_POLICY_URL =
   "https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training";
 const GITHUB_LOGGING_CODE_URL = "https://github.com/I-Prompt/t-rant/tree/master/app/src/lib";
 
+// Opens a pre-filled GitHub issue rather than routing through any backend of
+// ours - there isn't one to route through, and it keeps bug reports out of
+// band from the "no accounts, no stored rants, no tracking" promise (an
+// issue is something you choose to post publicly under your own GitHub
+// identity, not data we collect). Needs the repo to be public to actually
+// load for a visitor without repo access - same constraint as the "verify
+// our logging code" link above.
+const BUG_REPORT_BODY = `**What happened:**
+
+
+**What you expected instead:**
+
+
+**Steps to reproduce:**
+
+
+**Browser/device (if relevant):**
+`;
+const BUG_REPORT_URL = `https://github.com/I-Prompt/t-rant/issues/new?labels=bug&title=${encodeURIComponent(
+  "[Bug] "
+)}&body=${encodeURIComponent(BUG_REPORT_BODY)}`;
+
 // The "get help now" buttons bypass classification entirely — by design,
 // they work with an empty textarea, so there's often no text to detect a
 // language from. navigator.language (the browser/OS locale) turned out to be
@@ -110,9 +133,38 @@ function guessTextLanguage(text: string): SupportedLanguage {
 
 // Prefer the typed draft's language; default to English (never the browser
 // locale, see above) when there's no text to go on at all.
+// "Get help now" works with an empty textarea by design (see above), so
+// when there's no typed text to guess a language from, this falls back to
+// a manually-chosen preference instead of silently assuming English - see
+// HelpLanguagePicker. Typed text still wins when present: it's a more
+// direct signal than a preference set who-knows-how-long ago.
+const HELP_LANGUAGE_STORAGE_KEY = "trant-help-language";
+
+const HELP_LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
+  en: "English",
+  de: "Deutsch",
+  es: "Español",
+  it: "Italiano",
+  fr: "Français",
+  sv: "Svenska",
+  ru: "Русский",
+};
+
+function getStoredHelpLanguage(): SupportedLanguage {
+  try {
+    const stored = localStorage.getItem(HELP_LANGUAGE_STORAGE_KEY);
+    if ((SUPPORTED_LANGUAGES as readonly string[]).includes(stored ?? "")) {
+      return stored as SupportedLanguage;
+    }
+  } catch {
+    // ignore - private browsing, storage disabled, etc.
+  }
+  return "en";
+}
+
 function resolveHelpLanguage(text: string): SupportedLanguage {
   const trimmed = text.trim();
-  return trimmed ? guessTextLanguage(trimmed) : "en";
+  return trimmed ? guessTextLanguage(trimmed) : getStoredHelpLanguage();
 }
 
 const EMPTY_FLAGGED: FlaggedInfo = { originalText: "", flaggedPhrases: [], reason: "" };
@@ -824,6 +876,7 @@ export default function Home() {
       )}
 
       {!isSerious && !stealth && <HelpNowBar onHelp={showHelpNow} />}
+      {!isSerious && !stealth && <BugReportLine />}
 
       {!isSerious && rateLimit && !stealth && (
         <p style={{ fontSize: 13, color: "var(--color-text-faint)", marginTop: 6 }}>
@@ -867,6 +920,8 @@ export default function Home() {
           <PrivacyNotice />
         </details>
       )}
+
+      {!isSerious && !readerMode && !stealth && <HelpLanguagePicker />}
     </main>
   );
 }
@@ -1210,6 +1265,28 @@ function HelpNowBar({ onHelp }: { onHelp: (kind: "self_harm" | "in_danger") => v
       <button type="button" onClick={() => onHelp("in_danger")} style={linkButtonStyle}>
         Being hurt by someone
       </button>
+    </p>
+  );
+}
+
+// Moved out of the sidebar 2026-09-02 - a bug report isn't something that
+// needs a permanent nav slot, so it now lives here instead: same quiet
+// text-line treatment as HelpNowBar above it, not a bordered callout or a
+// persistent link. The 🐛 is deliberately the only emoji - this is a small
+// utility line, not a branded moment.
+function BugReportLine() {
+  return (
+    <p style={{ fontSize: 13, color: "var(--color-text-faint)", margin: "6px 0 0", lineHeight: 1.6 }}>
+      🐛 Found something broken?{" "}
+      <a
+        href={BUG_REPORT_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: "var(--color-text-faint)", textDecoration: "underline" }}
+      >
+        Report a bug
+      </a>
+      .
     </p>
   );
 }
@@ -1952,7 +2029,8 @@ function UnwindLinks() {
       </h2>
       <p style={{ marginTop: 6, fontSize: 13, color: "var(--color-text-faint)", fontStyle: "italic" }}>
         You're leaving T-Rant territory: everything past this point is somebody else's swamp, we
-        don't control it, vouch for it, or get a cut of your afternoon. Wander at your own risk.
+        don't control it, vouch for it, or get a cut of your afternoon. None of these are sponsored
+        or affiliated - just genuinely fun places to go blank for a few minutes.
       </p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
         {UNWIND_LINKS.map((link) => (
@@ -1982,6 +2060,58 @@ function UnwindLinks() {
 }
 
 // Reformatted 2026-08-19 for readability: a short heading, three trust
+// Subtle, bottom-of-page control: lets someone set a language ahead of
+// time for the "get help now" buttons, which otherwise have no typed text
+// to detect a language from (see resolveHelpLanguage above) and would
+// silently default to English. Deliberately not styled as a prominent
+// setting - the goal is that it's there to find, not something everyone
+// needs to notice on first visit - but it isn't hidden inside the
+// collapsed "Learn more" accordion either, since it's meant to be set
+// before an emergency, not discovered during one.
+function HelpLanguagePicker() {
+  const [selected, setSelected] = useState<SupportedLanguage>("en");
+
+  useEffect(() => {
+    setSelected(getStoredHelpLanguage());
+  }, []);
+
+  function choose(lang: SupportedLanguage) {
+    setSelected(lang);
+    try {
+      localStorage.setItem(HELP_LANGUAGE_STORAGE_KEY, lang);
+    } catch {
+      // ignore
+    }
+  }
+
+  return (
+    <p style={{ fontSize: 12, color: "var(--color-text-faint)", marginTop: 16, lineHeight: 1.9 }}>
+      🌍 If &quot;get help now&quot; is clicked before typing anything, reply in:{" "}
+      {SUPPORTED_LANGUAGES.map((lang, i) => (
+        <span key={lang}>
+          <button
+            type="button"
+            onClick={() => choose(lang)}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              font: "inherit",
+              fontWeight: selected === lang ? 700 : 400,
+              color: selected === lang ? "var(--color-text)" : "var(--color-text-faint)",
+              textDecoration: selected === lang ? "underline" : "none",
+              cursor: "pointer",
+            }}
+          >
+            {HELP_LANGUAGE_LABELS[lang]}
+          </button>
+          {i < SUPPORTED_LANGUAGES.length - 1 && " · "}
+        </span>
+      ))}
+    </p>
+  );
+}
+
 // bullets up front (the promise, at a glance), then the fuller paragraphs
 // with more breathing room. The link to House Rules used to live here too;
 // it's now in the persistent sidebar nav instead, so it isn't repeated.

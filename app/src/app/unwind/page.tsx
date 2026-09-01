@@ -17,8 +17,8 @@ export default function Unwind() {
       </p>
       <p style={{ marginTop: 12, fontSize: 13, color: "var(--color-text-faint)", fontStyle: "italic" }}>
         Fair warning: you're leaving T-Rant territory. Everything past this point is somebody else's
-        swamp - we don't control it, vouch for it, or get a cut of your afternoon. Wander at your own
-        risk.
+        swamp - we don't control it, vouch for it, or get a cut of your afternoon. None of these are
+        sponsored or affiliated - just genuinely fun places to go blank for a few minutes.
       </p>
 
       <div style={{ display: "grid", gap: 10, marginTop: 24 }}>

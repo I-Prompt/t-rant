@@ -85,7 +85,7 @@ T-Rant isn't a crisis service and can't offer real support, but real help exists
       },
       {
         title: "Time off.",
-        body: "Take time off work, if possible ('I have too much to do' doesn't count as a reason to keep working).",
+        body: 'Take time off work, if possible ("I have too much to do" doesn\'t count as a reason to keep working).',
         emphasizeFirstLetter: true,
       },
     ],

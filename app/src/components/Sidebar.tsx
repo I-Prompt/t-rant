@@ -26,28 +26,6 @@ const BOTTOM_LINKS = [
   { href: "/bookmarklet", label: "🔖 Bookmarklet" },
 ];
 
-// Opens a pre-filled GitHub issue rather than routing through any backend of
-// ours - there isn't one to route through, and it keeps bug reports out of
-// band from the "no accounts, no stored rants, no tracking" promise (an
-// issue is something you choose to post publicly under your own GitHub
-// identity, not data we collect). Needs the repo to be public to actually
-// load for a visitor without repo access - same constraint as the "verify
-// our logging code" link in House Rules/page.tsx.
-const BUG_REPORT_BODY = `**What happened:**
-
-
-**What you expected instead:**
-
-
-**Steps to reproduce:**
-
-
-**Browser/device (if relevant):**
-`;
-const BUG_REPORT_URL = `https://github.com/I-Prompt/t-rant/issues/new?labels=bug&title=${encodeURIComponent(
-  "[Bug] "
-)}&body=${encodeURIComponent(BUG_REPORT_BODY)}`;
-
 // One picked per browser session (sessionStorage, not localStorage - a
 // fresh tab gets a fresh one), shown in the sidebar on the home page only.
 // Unrelated to the input on purpose - a bit of found-poetry contrast to
@@ -162,16 +140,6 @@ export default function Sidebar() {
               {stealth ? plainLabel(link.label) : link.label}
             </Link>
           ))}
-
-          <a
-            href={BUG_REPORT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="trant-nav-link"
-            title="Report a bug - opens a pre-filled GitHub issue"
-          >
-            {stealth ? "Squash a Bug" : "🦖 Squash a Bug 🐛"}
-          </a>
         </div>
 
         <p className="trant-sidebar-foot">

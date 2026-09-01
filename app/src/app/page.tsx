@@ -2084,29 +2084,39 @@ function HelpLanguagePicker() {
   }
 
   return (
-    <p style={{ fontSize: 12, color: "var(--color-text-faint)", marginTop: 16, lineHeight: 1.9 }}>
-      🌍 If &quot;get help now&quot; is clicked before typing anything, reply in:{" "}
-      {SUPPORTED_LANGUAGES.map((lang, i) => (
-        <span key={lang}>
-          <button
-            type="button"
-            onClick={() => choose(lang)}
-            style={{
-              background: "none",
-              border: "none",
-              padding: 0,
-              font: "inherit",
-              fontWeight: selected === lang ? 700 : 400,
-              color: selected === lang ? "var(--color-text)" : "var(--color-text-faint)",
-              textDecoration: selected === lang ? "underline" : "none",
-              cursor: "pointer",
-            }}
-          >
+    <p
+      style={{
+        fontSize: 12,
+        color: "var(--color-text-faint)",
+        marginTop: 16,
+        lineHeight: 1.6,
+        display: "flex",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: 6,
+      }}
+    >
+      <span>🌍 If &quot;get help now&quot; is clicked before typing anything, reply in:</span>
+      <select
+        value={selected}
+        onChange={(e) => choose(e.target.value as SupportedLanguage)}
+        aria-label="Get help now language"
+        style={{
+          background: "var(--color-surface)",
+          color: "var(--color-text-faint)",
+          border: "1px solid var(--color-border)",
+          borderRadius: "var(--radius-sm)",
+          font: "inherit",
+          padding: "2px 6px",
+          cursor: "pointer",
+        }}
+      >
+        {SUPPORTED_LANGUAGES.map((lang) => (
+          <option key={lang} value={lang}>
             {HELP_LANGUAGE_LABELS[lang]}
-          </button>
-          {i < SUPPORTED_LANGUAGES.length - 1 && " · "}
-        </span>
-      ))}
+          </option>
+        ))}
+      </select>
     </p>
   );
 }

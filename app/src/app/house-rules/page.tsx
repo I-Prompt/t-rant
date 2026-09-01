@@ -195,15 +195,6 @@ export default function HouseRules() {
 
       <TopicGroup label="The fine print" />
 
-      <QA question="Are you eventually going to slap ads or a paywall on this?">
-        <p style={{ marginBottom: 0 }}>
-          Not right now. This is currently a free portfolio/demo project - no accounts, no ads, no
-          paywall on anything that works today. Like any project, that could change if it ever grew
-          into something beyond a demo, but nothing like that is built or planned at the moment. If
-          that ever changed, it would show up here and in the changelog, not quietly.
-        </p>
-      </QA>
-
       <QA question="Is there a limit on how much I can use this?">
         <p style={{ marginBottom: 0 }}>
           Roughly 10 rewrite requests per IP address per hour, to keep the tool sustainable and

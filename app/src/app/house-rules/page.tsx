@@ -7,7 +7,7 @@ const MAX_CHARS = 2000;
 
 const ANTHROPIC_TRAINING_POLICY_URL =
   "https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training";
-const GITHUB_LOGGING_CODE_URL = "https://github.com/I-Prompt/t-rant/tree/main/app/src/lib";
+const GITHUB_LOGGING_CODE_URL = "https://github.com/I-Prompt/t-rant/tree/master/app/src/lib";
 
 const CATEGORY_LABELS: Record<string, string> = {
   clean: "Clean - nothing flagged",
@@ -196,17 +196,12 @@ export default function HouseRules() {
       <TopicGroup label="The fine print" />
 
       <QA question="Are you eventually going to slap ads or a paywall on this?">
-        <p>
-          <strong>No.</strong> This is a portfolio/demo project with no monetization plans, and this
-          page is the public commitment to that. T-Rant will never add:
+        <p style={{ marginBottom: 0 }}>
+          Not right now. This is currently a free portfolio/demo project - no accounts, no ads, no
+          paywall on anything that works today. Like any project, that could change if it ever grew
+          into something beyond a demo, but nothing like that is built or planned at the moment. If
+          that ever changed, it would show up here and in the changelog, not quietly.
         </p>
-        <ul style={{ paddingLeft: 20, display: "grid", gap: 4, marginBottom: 0 }}>
-          <li>Ads</li>
-          <li>Reselling or sharing your text with anyone</li>
-          <li>Training any model on what you submit</li>
-          <li>Fake urgency or scarcity (&quot;only 2 rewrites left today!&quot;)</li>
-          <li>Paywalling a feature that already works for free</li>
-        </ul>
       </QA>
 
       <QA question="Is there a limit on how much I can use this?">

@@ -10,21 +10,43 @@ import { useUIState } from "@/components/UIState";
 // component (needs usePathname() to highlight the current page) - the rest
 // of the site stays server-rendered where it can.
 //
-// Order (2026-08-21): Unwind Links, House Rules, Dark Pattern Audit up top
-// (the pages someone's actually likely to click into from the product
-// itself), then a divider, then Emergency Numbers and Bookmarklet below it
-// (reference tools, reached for less often day-to-day).
+// Order (2026-08-21): Unwind Links, House Rules up top (the pages someone's
+// actually likely to click into from the product itself), then a divider,
+// then Emergency Numbers and Bookmarklet below it (reference tools, reached
+// for less often day-to-day). The Dark Pattern Audit page/link was removed
+// 2026-09-01 - see Sidebar.tsx history and README changelog.
 
 const TOP_LINKS = [
   { href: "/unwind", label: "🕹️ Unwind Links" },
   { href: "/house-rules", label: "📜 House Rules" },
-  { href: "/dark-patterns", label: "🕵️ Dark Pattern Audit" },
 ];
 
 const BOTTOM_LINKS = [
   { href: "/emergency-numbers", label: "🚨 Emergency Numbers" },
   { href: "/bookmarklet", label: "🔖 Bookmarklet" },
 ];
+
+// Opens a pre-filled GitHub issue rather than routing through any backend of
+// ours - there isn't one to route through, and it keeps bug reports out of
+// band from the "no accounts, no stored rants, no tracking" promise (an
+// issue is something you choose to post publicly under your own GitHub
+// identity, not data we collect). Needs the repo to be public to actually
+// load for a visitor without repo access - same constraint as the "verify
+// our logging code" link in House Rules/page.tsx.
+const BUG_REPORT_BODY = `**What happened:**
+
+
+**What you expected instead:**
+
+
+**Steps to reproduce:**
+
+
+**Browser/device (if relevant):**
+`;
+const BUG_REPORT_URL = `https://github.com/I-Prompt/t-rant/issues/new?labels=bug&title=${encodeURIComponent(
+  "[Bug] "
+)}&body=${encodeURIComponent(BUG_REPORT_BODY)}`;
 
 // One picked per browser session (sessionStorage, not localStorage - a
 // fresh tab gets a fresh one), shown in the sidebar on the home page only.
@@ -140,6 +162,16 @@ export default function Sidebar() {
               {stealth ? plainLabel(link.label) : link.label}
             </Link>
           ))}
+
+          <a
+            href={BUG_REPORT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="trant-nav-link"
+            title="Report a bug - opens a pre-filled GitHub issue"
+          >
+            {stealth ? "Squash a Bug" : "🦖 Squash a Bug 🐛"}
+          </a>
         </div>
 
         <p className="trant-sidebar-foot">

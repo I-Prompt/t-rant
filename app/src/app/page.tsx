@@ -65,7 +65,7 @@ const TONE_OPTIONS: { key: keyof ToneVersions; label: string }[] = [
 
 const ANTHROPIC_TRAINING_POLICY_URL =
   "https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training";
-const GITHUB_LOGGING_CODE_URL = "https://github.com/I-Prompt/t-rant/tree/main/app/src/lib";
+const GITHUB_LOGGING_CODE_URL = "https://github.com/I-Prompt/t-rant/tree/master/app/src/lib";
 
 // The "get help now" buttons bypass classification entirely — by design,
 // they work with an empty textarea, so there's often no text to detect a
@@ -1176,6 +1176,9 @@ function RageThermometer({ text }: { text: string }) {
         />
       </div>
       <span style={{ fontSize: 12, color: "var(--color-text-faint)" }}>rage preview: {Math.round(level)}/10</span>
+      <p style={{ margin: "4px 0 0", fontSize: 11, color: "var(--color-text-faint)", fontStyle: "italic" }}>
+        A local guess as you type — the real Rant Intensity Score shows up after you submit, and can differ.
+      </p>
     </div>
   );
 }
@@ -1791,7 +1794,7 @@ function IntensityGauge({ intensity }: { intensity: number }) {
   return (
     <div style={{ marginBottom: 18 }}>
       <p style={{ margin: "0 0 4px", fontSize: 13, color: "var(--color-text-soft)" }}>
-        Rant Intensity: {intensity}/10
+        Rant Intensity Score: {intensity}/10
       </p>
       <div style={{ height: 10, background: "var(--color-border)", borderRadius: 5, overflow: "hidden", maxWidth: 240 }}>
         <div
@@ -1802,6 +1805,9 @@ function IntensityGauge({ intensity }: { intensity: number }) {
           }}
         />
       </div>
+      <p style={{ margin: "4px 0 0", fontSize: 11.5, color: "var(--color-text-faint)", fontStyle: "italic" }}>
+        Judged by the classifier from your actual message — not a live guess.
+      </p>
     </div>
   );
 }
@@ -1870,7 +1876,7 @@ function HelpfulThingsList({ items }: { items: HelpfulThing[] }) {
         color: "var(--color-calm-text)",
       }}
     >
-      <p style={{ marginBottom: 8 }}>A few things that helped me:</p>
+      <p style={{ marginBottom: 8 }}>A few things that tend to help:</p>
       <ul style={{ paddingLeft: 20, listStyle: "none", marginLeft: 0 }}>
         {items.map((item, i) => (
           <li key={i} style={{ marginBottom: 8, fontStyle: item.optional ? "italic" : "normal" }}>

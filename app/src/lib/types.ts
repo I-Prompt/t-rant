@@ -66,7 +66,7 @@ export interface RateLimitInfo {
   limit: number;
 }
 
-// One item in the self-harm pathway's optional "things that helped me" list.
+// One item in the self-harm pathway's "things that tend to help" list.
 // `emphasizeFirstLetter` marks the 5 core items whose leading letters spell
 // T-R-A-N-T — English-only wordplay, see t-rant-phase2-brief.md section 3.
 // `optional` marks the aside that isn't part of the acrostic.

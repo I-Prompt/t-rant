@@ -52,9 +52,6 @@ Pair the statement above with a plain-language pointer to `src/lib/` in the GitH
 ### Rate-limit counter
 Show remaining requests on every response (e.g. "7 of 10 rants left this hour"), not a silent 429 when the limit is hit.
 
-### Dark-pattern promise
-A short, explicit "things we will never add" list — no ads, no reselling text, no model training on inputs, no fake urgency/scarcity, no paywalling a feature that already works for free. Lives on its own page (see #6 below) and is also linked from House Rules.
-
 ---
 
 ## 2. House Rules page — final structure
@@ -65,7 +62,6 @@ A short, explicit "things we will never add" list — no ads, no reselling text,
 - How flagging works, with 2-3 example phrases per category (self_harm, violent_threat, hard_no, injection/hate/sexual/other) — the categories themselves, not a live demo
 - Live classifier demo — type anything, see the category + flagged phrases returned, no rewrite generated (a safe sandbox to probe the system)
 - Privacy/data notice (the statement + verifiability pointer from #1)
-- Dark-pattern promise (linked from #1, full list lives on its own page)
 - Legal/liability notice, in particular around the self-harm pathway (not a crisis service, informational only)
 - Link to rate limits and the `/status` page
 
@@ -93,7 +89,7 @@ Supported languages: **English, German, Spanish, Italian, French, Swedish, Russi
 
 **Explicitly out of scope — stays English-only:**
 - House Rules page and everything inside it
-- All UI chrome (buttons, labels, the dark-pattern page, `/status` page)
+- All UI chrome (buttons, labels, the `/status` page)
 - README and any other project/meta content
 
 Rationale: the app's functional output should meet people in their language; the site's own scaffolding and legal/meta content does not need to for a portfolio-stage project, and keeping it English avoids a much larger i18n surface (UI string library, translation file maintenance) for content that isn't the actual product.
@@ -126,7 +122,6 @@ All confirmed for phase 2:
 - **Cooldown-timer mini-interaction.** Replace a generic spinner with an in-theme wait state — pixel Rex pacing/stomping animation — while the API call is in flight.
 - **Rage thermometer.** A client-side-only heuristic meter that fills as the person types, before submission — no API call involved, just local text analysis (length, punctuation intensity, caps-lock ratio, etc.) as a lightweight preview.
 - **Sound design tied to category, not just tone.** Deliberate silence for the self-harm/in-danger pathway (consistent with the "no mascot, no theatrics" design in the v1 spec); a distinct hard-stop sound for `violent_threat`; existing click-triggered square-wave SFX for the 3 tones stays as-is.
-- **Dark-pattern audit page.** A standalone page mocking how a typical app *would* monetize this exact tool (fake "upgrade to unlock more calm" paywall mockups, fake urgency banners) — clearly labeled as satire, explicitly not implemented, linked from the dark-pattern promise in #1.
 
 ### Personas — 5 new tone presets, beyond the 3 diplomacy tiers
 Picked for meme/format recognizability — each maps to an already-popular online humor genre, which is what gives them share potential:

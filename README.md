@@ -16,18 +16,23 @@ Live at **[t-rant.vercel.app](https://t-rant.vercel.app/)**.
 
 ## Why T-Rant
 
-"Angry message → professional rewrite" tools already exist. Here's what stands out about this one, at a glance:
+"Angry message → professional rewrite" tools already exist. Here's what stands out about this one:
 
-| | | |
-|---|---|---|
-| 🛡️ | **Real guardrails** | A dedicated safety classifier runs *before* anything gets rewritten - not prompts bolted onto an open text box |
-| 🔍 | **Provably transparent** | Every block shows its receipts, in your own words - not "trust us" |
-| 🌍 | **7 languages, natively** | Real classification and generation per language - not a translated UI slapped on top |
-| 🎭 | **Actual personality** | Pixel-art mascot, procedural sound, 5 meme-ready personas - built past "does the API call work" |
-| 🔒 | **Privacy by design** | No accounts, nothing stored but a category and a timestamp - and the logging code is public |
-| 💙 | **Built with care** | A real crisis bypass, one tap, no typing required - because this is exactly the kind of tool someone in a bad moment might open |
+- 🎭 **Genuinely fun to use, not just functional.**
+  - A pixel-art T-Rex mascot with the calm, uncomplicated charm of an old video game - not a slick corporate AI avatar
+  - Three tones to pick from, from barely-softened to fully diplomatic
+  - Five bonus personas for fun - Victorian letter, nature documentary, legal cease-and-desist, and more
+  - Share the result (or several of them) with a link - never the original rant
 
-All six are built and live today - see [Status](#status) for the one thing still outstanding (a human review pass on non-English safety translations).
+- 🛡️ **Safety that's actually built in, not bolted on.** A dedicated classifier checks every message before anything gets rewritten - not three prompt variations sharing one unguarded text box. The same guardrail includes a real crisis bypass: one tap, no typing required, because a rant tool is exactly the kind of place someone in a bad moment might open.
+
+- 🔍 **Explains itself when it says no.** If a message gets blocked, you're shown the exact words in your own text that caused it, plus a plain-English reason - never just a vague "blocked" with no explanation.
+
+- 🌍 **Works in 7 languages, not just English.** Paste your rant in German, Spanish, Italian, French, Swedish, or Russian and get the full response back in that same language, automatically.
+
+- 🔒 **Privacy by design.** No accounts, nothing stored beyond a category and a timestamp - and the code that logs it is public, so that's checkable, not just claimed.
+
+All five are built and live today - see [Status](#status) for the one thing still outstanding (a human review pass on non-English safety translations).
 
 ## Contents
 

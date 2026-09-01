@@ -747,7 +747,7 @@ export default function Home() {
             </div>
           </header>
           {!stealth && (
-            <p style={{ marginTop: 16, fontSize: 15.5, color: "var(--color-text-soft)", maxWidth: 540, lineHeight: 1.6 }}>
+            <p style={{ marginTop: 16, fontSize: 15.5, color: "var(--color-text-soft)", maxWidth: 620, lineHeight: 1.6 }}>
               Paste your heated draft below — get three versions you can actually send.
               <br />
               At your pick of diplomacy.

@@ -131,15 +131,15 @@ function guessTextLanguage(text: string): SupportedLanguage {
   return best;
 }
 
-// Prefer the typed draft's language; default to English (never the browser
-// locale, see above) when there's no text to go on at all.
+// Prefer the typed draft's language; fall back to whatever's chosen in
+// HelpLanguagePicker (always English until someone changes it - no
+// localStorage here on purpose, so the picker can never silently start on
+// a language nobody chose this visit) when there's no text to go on at all.
 // "Get help now" works with an empty textarea by design (see above), so
-// when there's no typed text to guess a language from, this falls back to
-// a manually-chosen preference instead of silently assuming English - see
-// HelpLanguagePicker. Typed text still wins when present: it's a more
-// direct signal than a preference set who-knows-how-long ago.
-const HELP_LANGUAGE_STORAGE_KEY = "trant-help-language";
-
+// when there's no typed text to guess a language from, this needs an
+// explicit fallback rather than silently assuming English forever. Typed
+// text still wins when present: it's a more direct signal than a
+// preference picked earlier in the same visit.
 const HELP_LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   en: "English",
   de: "Deutsch",
@@ -150,21 +150,9 @@ const HELP_LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   ru: "Русский",
 };
 
-function getStoredHelpLanguage(): SupportedLanguage {
-  try {
-    const stored = localStorage.getItem(HELP_LANGUAGE_STORAGE_KEY);
-    if ((SUPPORTED_LANGUAGES as readonly string[]).includes(stored ?? "")) {
-      return stored as SupportedLanguage;
-    }
-  } catch {
-    // ignore - private browsing, storage disabled, etc.
-  }
-  return "en";
-}
-
-function resolveHelpLanguage(text: string): SupportedLanguage {
+function resolveHelpLanguage(text: string, fallback: SupportedLanguage): SupportedLanguage {
   const trimmed = text.trim();
-  return trimmed ? guessTextLanguage(trimmed) : getStoredHelpLanguage();
+  return trimmed ? guessTextLanguage(trimmed) : fallback;
 }
 
 const EMPTY_FLAGGED: FlaggedInfo = { originalText: "", flaggedPhrases: [], reason: "" };
@@ -408,6 +396,10 @@ function CharCount({ value, max }: { value: number; max: number }) {
 export default function Home() {
   const [text, setText] = useState("");
   const [context, setContext] = useState("");
+  // Fallback language for "get help now" clicked with an empty textarea -
+  // see resolveHelpLanguage/HelpLanguagePicker. Always starts at English;
+  // changing it only affects this visit, on purpose.
+  const [helpLanguage, setHelpLanguage] = useState<SupportedLanguage>("en");
   const [submittedText, setSubmittedText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -649,7 +641,7 @@ export default function Home() {
   function showHelpNow(kind: "self_harm" | "in_danger") {
     setError(null);
     setSharedData(null);
-    const content = SELF_HARM_CONTENT[resolveHelpLanguage(text)];
+    const content = SELF_HARM_CONTENT[resolveHelpLanguage(text, helpLanguage)];
     if (kind === "self_harm") {
       setResult({
         pathway: "serious",
@@ -756,8 +748,9 @@ export default function Home() {
           </header>
           {!stealth && (
             <p style={{ marginTop: 16, fontSize: 15.5, color: "var(--color-text-soft)", maxWidth: 540, lineHeight: 1.6 }}>
-              Paste your heated draft below — get three versions you can actually send, at your pick of
-              diplomacy.
+              Paste your heated draft below — get three versions you can actually send.
+              <br />
+              At your pick of diplomacy.
             </p>
           )}
 
@@ -876,7 +869,7 @@ export default function Home() {
       )}
 
       {!isSerious && !stealth && <HelpNowBar onHelp={showHelpNow} />}
-      {!isSerious && !stealth && <HelpLanguagePicker />}
+      {!isSerious && !stealth && <HelpLanguagePicker value={helpLanguage} onChange={setHelpLanguage} />}
 
       {!isSerious && rateLimit && !stealth && (
         <p style={{ fontSize: 13, color: "var(--color-text-faint)", marginTop: 6 }}>
@@ -2065,24 +2058,21 @@ function UnwindLinks() {
 // there's no button actually labeled "get help now" (the real buttons say
 // "Thoughts of self-harm" / "Being hurt by someone"), so that copy pointed
 // at nothing a reader could see. Grouping it with the buttons it actually
-// affects, with English pre-selected by default, reads as what it is: set
-// this before you need it, not a setting you have to go hunting for.
-function HelpLanguagePicker() {
-  const [selected, setSelected] = useState<SupportedLanguage>("en");
-
-  useEffect(() => {
-    setSelected(getStoredHelpLanguage());
-  }, []);
-
-  function choose(lang: SupportedLanguage) {
-    setSelected(lang);
-    try {
-      localStorage.setItem(HELP_LANGUAGE_STORAGE_KEY, lang);
-    } catch {
-      // ignore
-    }
-  }
-
+// affects reads as what it is: set this before you need it, not a setting
+// you have to go hunting for.
+//
+// Controlled by Home() (value/onChange), not local state - this used to
+// persist to localStorage so a chosen language survived reloads, but that
+// meant the visible default could silently stop being English on a later
+// visit with no indication why. Always starts at English now; changing it
+// only holds for the current visit.
+function HelpLanguagePicker({
+  value,
+  onChange,
+}: {
+  value: SupportedLanguage;
+  onChange: (lang: SupportedLanguage) => void;
+}) {
   return (
     <p
       style={{
@@ -2098,8 +2088,8 @@ function HelpLanguagePicker() {
     >
       <span>🌍 Get response in:</span>
       <select
-        value={selected}
-        onChange={(e) => choose(e.target.value as SupportedLanguage)}
+        value={value}
+        onChange={(e) => onChange(e.target.value as SupportedLanguage)}
         aria-label="Get response in"
         style={{
           background: "var(--color-surface)",

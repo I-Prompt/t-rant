@@ -21,12 +21,13 @@ Live at **[t-rant.vercel.app](https://t-rant.vercel.app/)**.
 | Feature | Why it matters |
 |---|---|
 | 🎭 **Genuinely fun to use** | Pixel-art T-Rex mascot with old-video-game charm<br>3 tones to pick from<br>5 bonus personas for fun<br>Share a result with a link - never the original rant |
+| 🕶️ **Stealth Mode** | One click disguises the page as a plain "Notes" app - the same instinct as a laptop privacy screen for a shared desk or public space. Visual only, never saved - see [Stealth Mode](#stealth-mode) |
 | 🛡️ **Safety built in, not bolted on** | A dedicated classifier checks every message before anything gets rewritten - not prompt variations sharing one unguarded text box. Includes a real crisis bypass: one tap, no typing required |
 | 🔍 **Explains itself when it says no** | Blocked? You're shown the exact words in your own text that caused it, plus a plain-English reason - never just a vague "blocked" |
 | 🌍 **Works in 7 languages** | Paste your rant in German, Spanish, Italian, French, Swedish, or Russian - the full response comes back in that language, automatically |
 | 🔒 **Privacy by design** | No accounts, nothing stored beyond a category and a timestamp - and the code that logs it is public, so that's checkable, not just claimed |
 
-All five are built and live today - see [Status](#status) for the one thing still outstanding (a human review pass on non-English safety translations).
+All six are built and live today - see [Status](#status) for the one thing still outstanding (a human review pass on non-English safety translations).
 
 ## Contents
 

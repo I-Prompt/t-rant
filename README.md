@@ -18,19 +18,13 @@ Live at **[t-rant.vercel.app](https://t-rant.vercel.app/)**.
 
 "Angry message → professional rewrite" tools already exist. Here's what stands out about this one:
 
-- 🎭 **Genuinely fun to use, not just functional.**
-  - A pixel-art T-Rex mascot with the calm, uncomplicated charm of an old video game - not a slick corporate AI avatar
-  - Three tones to pick from, from barely-softened to fully diplomatic
-  - Five bonus personas for fun - Victorian letter, nature documentary, legal cease-and-desist, and more
-  - Share the result (or several of them) with a link - never the original rant
-
-- 🛡️ **Safety that's actually built in, not bolted on.** A dedicated classifier checks every message before anything gets rewritten - not three prompt variations sharing one unguarded text box. The same guardrail includes a real crisis bypass: one tap, no typing required, because a rant tool is exactly the kind of place someone in a bad moment might open.
-
-- 🔍 **Explains itself when it says no.** If a message gets blocked, you're shown the exact words in your own text that caused it, plus a plain-English reason - never just a vague "blocked" with no explanation.
-
-- 🌍 **Works in 7 languages, not just English.** Paste your rant in German, Spanish, Italian, French, Swedish, or Russian and get the full response back in that same language, automatically.
-
-- 🔒 **Privacy by design.** No accounts, nothing stored beyond a category and a timestamp - and the code that logs it is public, so that's checkable, not just claimed.
+| Feature | Why it matters |
+|---|---|
+| 🎭 **Genuinely fun to use** | Pixel-art T-Rex mascot with old-video-game charm<br>3 tones to pick from<br>5 bonus personas for fun<br>Share a result with a link - never the original rant |
+| 🛡️ **Safety built in, not bolted on** | A dedicated classifier checks every message before anything gets rewritten - not prompt variations sharing one unguarded text box. Includes a real crisis bypass: one tap, no typing required |
+| 🔍 **Explains itself when it says no** | Blocked? You're shown the exact words in your own text that caused it, plus a plain-English reason - never just a vague "blocked" |
+| 🌍 **Works in 7 languages** | Paste your rant in German, Spanish, Italian, French, Swedish, or Russian - the full response comes back in that language, automatically |
+| 🔒 **Privacy by design** | No accounts, nothing stored beyond a category and a timestamp - and the code that logs it is public, so that's checkable, not just claimed |
 
 All five are built and live today - see [Status](#status) for the one thing still outstanding (a human review pass on non-English safety translations).
 
@@ -42,6 +36,7 @@ All five are built and live today - see [Status](#status) for the one thing stil
 - 🔍 [Transparency & Trust](#transparency--trust)
 - 🌍 [Multilingual Support](#multilingual-support)
 - 📤 [Sharing](#sharing)
+- 🕶️ [Stealth Mode](#stealth-mode)
 - ✨ [Extras](#extras)
 - 📊 [Status](#status)
 - 💻 [Running Locally](#running-locally)
@@ -139,6 +134,16 @@ Built for real viral potential without touching the "zero accounts, zero trackin
 - **Auto-generated Open Graph image** ([`opengraph-image.tsx`](app/src/app/opengraph-image.tsx)) so shared links render a real preview card.
 - **[Bookmarklet](app/src/app/bookmarklet/page.tsx)**: highlight text anywhere in your browser, click the bookmark, land on T-Rant with it pre-filled.
 - **Screenshot branding**: every non-serious result renders inside a bordered card with a "🦖 T-Rant" band top and bottom, so a manual screenshot carries the mark no matter where someone crops it.
+
+## Stealth Mode
+
+A one-click toggle (🕶️ **Stealth**, top-right of the page) that swaps T-Rant's branding for a plain "Notes" look and fills the textarea with placeholder to-do-style text, so the tab reads as unremarkable at a glance. It's for the ordinary case of typing something personal in a shared or public space - an open desk, a coworking table, any screen someone might glance at in passing - the same instinct behind a laptop privacy screen, not a way to defeat any particular system.
+
+A few things worth being explicit about:
+
+- **Visual only, session-only, never saved.** No flag is written anywhere. Reopening the tab starts clean, and nothing about the toggle is stored or remembered.
+- **Doesn't change what's private.** T-Rant's own privacy posture (see [Transparency & Trust](#transparency--trust)) is identical with Stealth on or off. It has no effect on anything outside the browser tab itself - network monitoring, a managed device's own logging, browser history are all untouched. The in-app House Rules page has an honest, specific breakdown of that under "Is it safe to use this on a work computer?"
+- **Doesn't hide what it is, if you look.** A small "Rules" disclosure inside Stealth states plainly that it's for display only - nothing is saved.
 
 ## Extras
 
